@@ -1,0 +1,43 @@
+# Secrets / local config
+.env
+.env.*
+*.env
+*secret*
+*secrets*
+*password*
+*credentials*
+*.pfx
+*.key
+*.pem
+
+# Azure / SQL / Power BI local artifacts
+*.pbix.tmp
+*.pbit.tmp
+~$*.docx
+~$*.xlsx
+~$*.pptx
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Local exports that may contain sensitive data
+evidencias/**/*.png
+evidencias/**/*.jpg
+evidencias/**/*.jpeg
+evidencias/**/*.csv
+evidencias/**/*.xlsx
+evidencias/**/*.json
+!pruebas/bitacora_pruebas.csv
+
+# Keep placeholders
+!**/.gitkeep
