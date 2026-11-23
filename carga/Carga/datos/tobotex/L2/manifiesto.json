@@ -1,0 +1,19 @@
+{
+  "lote": "L2",
+  "fecha_recepcion": "2026-10-20",
+  "semilla": 2026,
+  "archivos": [
+    {
+      "archivo": "despacho_L2.csv",
+      "filas": 1,
+      "bytes": 263,
+      "sha256": "e5f1876f9fcfa79b25e1cea9f1396ed653fa3888b85d4fe7726bdae37b88e048"
+    },
+    {
+      "archivo": "reclamo_L2.jsonl",
+      "filas": 3,
+      "bytes": 658,
+      "sha256": "c0c8778ebb186b9e58e44a1e2dcff694173ea3d49ced8d57dff5351a06f3e9d6"
+    }
+  ]
+}

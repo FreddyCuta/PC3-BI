@@ -1,0 +1,5 @@
+lote,linea,fecha_venta,sede,producto,canal,version,importe
+L0,V01,2026-01-10,S1,P1,WEB,1,100.00
+L0,V02,2026-02-10,S1,P1,WEB,1,120.00
+L0,V03,2026-03-10,S1,P2,TIENDA,1,80.00
+L0,V04,2026-03-12,S2,P1,WEB,1,40.00

@@ -1,0 +1,25 @@
+{
+  "lote": "L0",
+  "fecha_recepcion": "2026-10-01",
+  "semilla": 2026,
+  "archivos": [
+    {
+      "archivo": "despacho_L0.csv",
+      "filas": 600,
+      "bytes": 65597,
+      "sha256": "16dd2fa880cbfaa981f0767779167094254c3faf00aeec5f6ec5581d295c45aa"
+    },
+    {
+      "archivo": "reclamo_L0.jsonl",
+      "filas": 49,
+      "bytes": 10753,
+      "sha256": "31a0cc306e66c7b1b0a06dfa06dd3f7a3f24124d6f57f0d5baae52382913ecae"
+    },
+    {
+      "archivo": "tienda_L0.csv",
+      "filas": 3,
+      "bytes": 157,
+      "sha256": "b48995ee79f42a81af80c2e3c61c380f557ccd4e018a2d150a50393fb5f45c24"
+    }
+  ]
+}

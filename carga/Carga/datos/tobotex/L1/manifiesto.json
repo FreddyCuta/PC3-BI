@@ -1,0 +1,13 @@
+{
+  "lote": "L1",
+  "fecha_recepcion": "2026-10-04",
+  "semilla": 2026,
+  "archivos": [
+    {
+      "archivo": "despacho_L1.csv",
+      "filas": 45,
+      "bytes": 5068,
+      "sha256": "ef871cc6ca884d338728fe007eb526a3687e8e194c95c64e6b0e8b1edc13f2c7"
+    }
+  ]
+}

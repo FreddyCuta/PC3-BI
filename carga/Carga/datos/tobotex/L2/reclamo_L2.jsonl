@@ -1,0 +1,3 @@
+{"id_reclamo": "R000050", "id_movimiento": "M000416", "fecha_reclamo": "2026-09-04", "cantidad_devuelta": 12, "importe_devuelto_pen": "1.44", "motivo": "COLOR", "fecha_actualizacion_origen": "2026-09-04 10:00:00"}
+{"id_reclamo": "R000051", "id_movimiento": "M000409", "fecha_reclamo": "2026-09-22", "cantidad_devuelta": 698, "importe_devuelto_pen": "41.88", "motivo": "DEFECTO_TEJIDO", "fecha_actualizacion_origen": "2026-09-22 10:00:00"}
+{"id_reclamo": "R000052", "id_movimiento": "M000491", "fecha_reclamo": "2026-09-28", "cantidad_devuelta": 1386, "importe_devuelto_pen": "166.32", "motivo": "MEDIDA", "fecha_actualizacion_origen": "2026-09-28 10:00:00"}
