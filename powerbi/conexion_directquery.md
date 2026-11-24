@@ -1,17 +1,23 @@
 # Conexión Azure SQL → Power BI Desktop
 
-> Estado local: **no se generó `.pbix`**. No hay Power BI Desktop, credenciales ni base publicada
-> en este entorno. Esto es un procedimiento versionado del manual §9, no evidencia de conexión.
+> SQL ya está preparado (23/11/2026), pero **no se generó `.pbix` ni se abrió Power BI Service**.
+> Servidor real: `sql-tobotex-pc3.database.windows.net`. Base: `sqldb-tobotex`.
+> Usuario recomendado: tu cuenta de Entra `edward_oliva2002@outlook.com` (sin contraseña nueva).
+> Alternativa: `bi_reader` con contraseña SQL, sin reutilizar secretos del repositorio.
 
 ## Ruta principal: DirectQuery (manual §9.2)
 
 1. Abrir Power BI Desktop en Windows y guardar como `tobotex_pc3.pbix`.
 2. **Inicio > Obtener datos > Azure > Azure SQL Database**.
-3. Servidor completo `TU_SERVIDOR.database.windows.net`; base `sqldb-tobotex`.
+3. Servidor: `sql-tobotex-pc3.database.windows.net`; base: `sqldb-tobotex`.
 4. Seleccionar **DirectQuery**. Consulta SQL avanzada vacía: usar vistas del navegador.
-5. Autenticación **Database**, usuario `bi_reader` y secreto nuevo de la sesión.
-   No usar Windows Authentication para ese usuario contenido. No versionar el secreto.
-6. Elegir el nivel correcto de servidor/base para guardar credenciales.
+5. Autenticación recomendada: **Microsoft account / Azure Active Directory - Universal with MFA**
+   (el nombre cambia según versión). Inicia sesión con `edward_oliva2002@outlook.com`.
+   Ya existe un usuario contenido de Entra con ese nombre y permisos de sólo lectura en `bi`.
+   Si prefieres SQL Authentication, usa `bi_reader` con una contraseña nueva guardada fuera del repo.
+   No uses Windows Authentication ni la cuenta administradora `tobotex`.
+6. Elegir el nivel correcto de servidor/base para guardar credenciales. Si aparece un aviso de firewall,
+   la IP actual ya está permitida; desde otra red hay que agregar esa IP en el servidor SQL.
 7. Marcar vistas:
 
 | Vista | Nombre de consulta |
@@ -25,6 +31,8 @@
 | `bi.v_corte_publicado` | `Corte` |
 | `bi.v_periodo_revisado` | `Revisiones` |
 | `bi.v_comparacion_cortes` | `Comparacion` |
+| `bi.v_k1`, `bi.v_k2`, `bi.v_k3`, `bi.v_k4`, `bi.v_k6` | `K1`, `K2`, `K3`, `K4`, `K6` |
+| `bi.v_k5` | `LineasCorte` (sin filtro temporal, §10.7) |
 
 8. **Transformar datos**: `fecha` como Date, importes decimal fijo, cantidades entero, claves texto.
 9. **No combinar** los dos hechos con Merge. El doble conteo se evita agregando por separado.
@@ -58,9 +66,11 @@ informes/modelos: no se importan filas directamente sobre sus tarjetas.
 ## Prerrequisitos SQL del lector
 
 `bi_reader` no lee `cur`. Las vistas `bi.v_dim_*` se versionan en
-`sql/fase3/20_dimensiones_powerbi.sql` y deben crearse como administrador antes de conectar.
-Verificar unicidad de `marca_codigo` y `tienda`: ambas consultas deben devolver cero filas.
-No ocultar duplicados arbitrariamente; si hay colisión de marca, cambiar el diseño de clave.
+`sql/fase3/20_dimensiones_powerbi.sql` y **ya fueron creadas** en `sqldb-tobotex`.
+La verificación de unicidad devolvió cero filas para `marca_codigo` y `tienda`.
+El usuario de Entra `edward_oliva2002@outlook.com` también tiene `GRANT SELECT` en `bi` y
+`DENY SELECT` en `ctl`, `cur`, `quar`, `stg` y `trusted`. No ocultar duplicados arbitrariamente;
+si hay colisión de marca, cambiar el diseño de clave.
 
 No usar `v_dim_tienda_bi` con múltiples versiones SCD2 de LEO: la asignación temporal ya está
 resuelta en `bi.v_despacho`/`bi.v_reclamo`. Para filtrar zona común a ambos hechos, crear una

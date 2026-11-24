@@ -6,10 +6,11 @@
 
 | Identidad | Uso | Permisos esperados | Prohibido |
 |---|---|---|---|
-| `sqladmin` | Administración/DDL | Control total en servidor/DB | Uso rutinario en Power BI/ETL |
+| `tobotex` | Administración/DDL (admin SQL real del servidor) | Control total en servidor/DB | Uso rutinario en Power BI/ETL |
 | `etl_loader` | ADF/carga manual | DML en `stg`, EXEC procedimientos necesarios, lectura control | Acceso amplio innecesario a `bi` como admin |
-| `bi_reader` | Power BI/consumo | `SELECT` en esquema `bi` | SELECT en `stg/trusted/quar/cur/ctl`, escritura |
-| Managed Identity ADF | Lectura raw | Storage Blob Data Reader en ADLS raw | Escritura fuera de lo requerido |
+| `bi_reader` | Power BI/consumo (SQL Auth alternativo) | `SELECT` en esquema `bi` | SELECT en `stg/trusted/quar/cur/ctl`, escritura |
+| `edward_oliva2002@outlook.com` | Power BI recomendado (Entra contenido) | `SELECT` en `bi`; `DENY` en `ctl/cur/quar/stg/trusted` | Uso de la cuenta admin para consumo |
+| Managed Identity ADF (`fac126e9-2556-4393-90c2-cd3841fe5926`) | Lectura raw | Storage Blob Data Reader en ADLS raw | Escritura fuera de lo requerido. **No se encontró asignada; asignarla antes de ejecutar ADF** |
 
 ### Pruebas mínimas
 
@@ -23,6 +24,8 @@ SELECT TOP (5) * FROM cur.fact_despacho;
 ```
 
 Registrar: usuario, base, consulta, resultado, mensaje de error, captura sin secretos.
+Para el usuario de Entra, verificar sus permisos en `sys.database_permissions`; la suplantación
+`EXECUTE AS USER` con ese usuario contenido no cambió `USER_NAME()` en la comprobación realizada.
 
 ## 2. Costos
 

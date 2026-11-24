@@ -1,9 +1,10 @@
 # Consultas de verificación P1–P8
 
-Versiones locales de las consultas de los manuales §12 y §8.4. **Ninguna fue ejecutada** contra
-Azure SQL en esta preparación: no hay base, credenciales ni resultados observados.
+Versiones locales de las consultas de los manuales §12 y §8.4. La verificación inicial de relevo
+sí se ejecutó en `sqldb-tobotex` y `sqldb-control` el 23/11/2026; el corte publicado real es
+`corte_seq=6` / `C-20261123-06` y la base Control está vacía.
 
-- Ejecutar cada archivo con el usuario indicado en el comentario (`bi_reader` o administrador).
+- Ejecutar cada archivo con el usuario indicado en el comentario (`bi_reader`, el usuario Entra de Power BI o administrador).
 - Sustituir cualquier `1`/`TU_` por el `corte_seq`/nombre real antes de ejecutar; no inventarlos.
 - Guardar la salida como `.csv` en `evidencias/Pn/<caso>/<intento>/<RunId>/` con la captura.
 - Los valores `esperado` son del manual o del cálculo local previo, nunca un observado.

@@ -7,7 +7,7 @@
 
 - [ ] PDF final del informe en `entregables/`.
 - [x] Scripts SQL versionados en `sql/fase3/` y orden en `docs/estado_preparacion_fase3.md`.
-- [ ] Ejecución de scripts SQL en `sqldb-test`, Tobotex y Control (PENDIENTE).
+- [ ] Ejecución de scripts SQL en `sqldb-test`, Tobotex y Control (Tobotex verificado con corte 6; `sqldb-test` no existe; Control vacía).
 - [x] Contratos (`contratos/`) y prevalidación (`evidencias/relevo/`).
 - [x] Datos y manifiestos originales conservados; adaptación versionada en `datos/control_adaptado/`.
 - [x] Plantillas ADF en `adf/` (sin secretos; **no publicadas**).

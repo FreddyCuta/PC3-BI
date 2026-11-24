@@ -18,7 +18,7 @@ DENY SELECT ON SCHEMA::ctl TO bi_reader;
 GO
 
 -- Para mínimo privilegio estricto, sustituye los GRANT EXECUTE por esquema
--- por concedEXECUTE únicamente en los procedimientos usados por la ingesta:
+-- por conceder EXECUTE únicamente en los procedimientos usados por la ingesta:
 --   ctl.sp_iniciar_lote, ctl.sp_validar_contrato, ctl.sp_abrir_corte,
 --   ctl.sp_marcar_falla, ctl.sp_simular_falla, ctl.sp_publicar_corte (si aplica),
 --   trusted.sp_merge_tienda, trusted.sp_merge_despacho, trusted.sp_merge_reclamo,

@@ -1,5 +1,5 @@
 -- Manual §4.3. Ejecutar después de "SQL query 6.sql" y antes de preparar hechos.
--- No idempotente en el sentido de que dependede de cur.dim_fecha existente;
+-- Depende de que cur.dim_fecha exista;
 -- el WHERE NOT EXISTS evita duplicar fechas si se vuelve a ejecutar.
 -- Validar primero en sqldb-test. No llamar a GETDATE(): el caso usa 2026.
 

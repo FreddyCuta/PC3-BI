@@ -1,6 +1,6 @@
 # Estado del relevo — Fase 2 a Fase 3
 
-> Estado de **preparación local**. Los nombres con `TU_` son propuestos por el manual y deben sustituirse por valores reales al crear los recursos. Nada de lo marcado como «planeado» está creado ni verificado en Azure.
+> Estado actualizado con **verificación real de Azure (23/11/2026)** mediante Azure MCP y `az CLI` de sólo lectura, más la preparación SQL descrita en `powerbi/conexion_directquery.md`. Sigue sin haber `.pbix`, publicación en Power BI Service ni escrituras en Azure distintas de las indicadas en §7.
 
 ## 1. Resumen
 
@@ -16,21 +16,22 @@
 
 | Recurso | Nombre/ID | Estado | Acceso verificado | Evidencia | Observaciones |
 |---|---|---|---|---|---|
-| Suscripción Azure | PENDIENTE | No creado/no comprobado | No |  | Se necesita permiso para crear recursos y asignar roles |
-| Grupo de recursos | `rg-tobotex-pc3` | Planeado | No |  | Región propuesta: Chile Central; confirmar disponibilidad |
-| Región | `chilecentral` (propuesta) | Planeada | No |  | Registrar alternativa si no está disponible |
-| ADLS Gen2 | `sttobotexpc3TUINICIALES` | Planeado | No |  | HNS activado, Standard LRS, contenedores privados |
-| Contenedor caso | `raw` | Planeado | No |  | Ruta `raw/tobotex/<lote>/` |
-| Contenedor control | `rawcontrol` | Planeado | No |  | Ruta `rawcontrol/control_original|control_adaptado/<lote>/` |
-| SQL Server | `sql-tobotex-pc3-TUINICIALES` | Planeado | No |  | Un servidor lógico, tres bases |
-| DB Tobotex | `sqldb-tobotex` | Planeado | No |  | Primera base de despliegue: usar `sqldb-test` |
-| DB Control | `sqldb-control` | Planeado | No |  | Umbral C8 documentado 0,25 |
-| DB Test | `sqldb-test` | Planeado | No |  | Base vacía para validar scripts antes del caso |
-| Data Factory | `adf-tobotex-pc3-TUINICIALES` | Planeado | No |  | Identidad asignada por sistema |
-| Identidad ADF | PENDIENTE (object id real) | Planeada | No |  | Rol `Storage Blob Data Reader` en `raw` y `rawcontrol` |
-| Usuario ingesta | `etl_loader` | Planeado | No |  | Secreto nuevo, fuera del repositorio |
-| Usuario lectura | `bi_reader` | Planeado | No |  | Solo `SELECT` en esquema `bi` |
-| Power BI | `powerbi/tobotex_pc3.pbix` | No creado | No |  | DirectQuery principal; Import como alternativa |
+| Suscripción Azure | `f57db137-2f2a-49e8-83f3-990b2c786c01` (Azure for Students) | Verificada | Sí | `az account show` + MCP | Tenant `dee9f998-d159-442c-a88d-f1171c748fa5` |
+| Grupo de recursos | `rg-tobotex-pc3` | Verificado | Sí | `group_list` | También existen `cartrune-rg`, `cartrune-rg-chile`, `NetworkWatcherRG` |
+| Región | `chilecentral` | Verificada | Sí | `group_resource_list` | Confirmada en los recursos del caso |
+| ADLS Gen2 | `sttobotexpc3` | Verificado | Sí | ARM REST | HNS activado, `Standard_LRS`, `StorageV2` |
+| Contenedor caso | `raw` | Verificado | Sí | ARM REST | `publicAccess=None` |
+| Contenedor control | `rawcontrol` | Verificado | Sí | ARM REST | `publicAccess=None`; también existe `quarantine` |
+| SQL Server | `sql-tobotex-pc3` | Verificado | Sí | `sql_server_get` | `sql-tobotex-pc3.database.windows.net`; admin SQL `tobotex`; admin Entra `edward_oliva2002@outlook.com` |
+| DB Tobotex | `sqldb-tobotex` | Verificada | Sí | T-SQL | 20 tablas, 12 procedimientos, 12 vistas; corte publicado 6 (`C-20261123-06`) |
+| DB Control | `sqldb-control` | Verificada | Sí | T-SQL | Vacía: 0 tablas, 0 procedimientos, 1 vista; umbral C8 propuesto 0,25 |
+| DB Test | `sqldb-test` | **No existe** | No | `sql_db_get` | No se creó; no es necesaria para conectar Power BI a Tobotex |
+| Data Factory | `adf-tobotex-pc3` | Verificado | Sí | ARM REST | Pipeline publicado:`pl_ingestar_lote_tobotex` |
+| Identidad ADF | `fac126e9-2556-4393-90c2-cd3841fe5926` | Verificada | Sí | ARM REST | No se encontró asignación de `Storage Blob Data Reader` en Storage; otorgarla antes de ejecutar ADF |
+| Usuario ingesta | `etl_loader` | Verificado | Sí | T-SQL | Permisos presentes en Tobotex; secreto no versionado |
+| Usuario lectura SQL | `bi_reader` | Verificado | Sí | T-SQL | `SELECT` en `bi`; `DENY` en `cur`, `stg`, `trusted`, `quar`, `ctl` |
+| Usuario lectura Entra | `edward_oliva2002@outlook.com` | Creado en Tobotex | Sí | T-SQL | Contained user; mismo patrón de permisos que `bi_reader`; sin contraseña nueva |
+| Power BI | `powerbi/tobotex_pc3.pbix` | No creado | No |  | SQL listo; falta construir `.pbix` en Desktop con DirectQuery |
 
 ## 3. Artefactos recibidos / preparados localmente
 
@@ -53,7 +54,7 @@
 
 ## 4. Validación inicial (consultas de lectura)
 
-No ejecutada. Ejecutar en Tobotex y Control cuando existan. Guardar salida en `evidencias/relevo/`.
+Ejecutada en `sqldb-tobotex` y `sqldb-control` con token de `az CLI`. La salida no se guardó como archivo; los resultados se resumen abajo y las consultas para repetirla están en `pruebas/consultas/00_conciliacion.sql`. No se ejecutó en `sqldb-test` porque no existe.
 
 ```sql
 SELECT DB_NAME() AS base_actual;
@@ -67,9 +68,9 @@ SELECT * FROM bi.v_k3;
 
 | Base | Ejecutado | Resultado | Evidencia |
 |---|---:|---|---|
-| sqldb-test | No | PENDIENTE |  |
-| sqldb-tobotex | No | PENDIENTE |  |
-| sqldb-control | No | PENDIENTE |  |
+| sqldb-test | No | No existe | `sql_db_get` |
+| sqldb-tobotex | Sí | 20 tablas / 12 procs / 12 vistas; `corte_vigente=6`; `fact_despacho=658`, `fact_reclamo=55`, `dim_fecha=365` | consulta T-SQL de relevo |
+| sqldb-control | Sí | 0 tablas / 0 procs / 1 vista | consulta T-SQL de relevo |
 
 ## 5. Incidencias / bloqueos
 
@@ -89,3 +90,13 @@ SELECT * FROM bi.v_k3;
 5. **K6:** motivos vacíos/desconocidos se conservan como `SIN_MOTIVO` con `es_valido = 0`; no se rechazan los reclamos.
 6. **Publicación:** se propone versión endurecida de `ctl.sp_publicar_corte`; validar en `sqldb-test` antes de aplicarla al caso.
 7. **JSONL:** prevalidación manual de propiedades requeridas antes de subir; no presentarla como validación automática de ADF sin Azure Function.
+
+## 7. Verificación cloud y preparación Power BI (23/11/2026)
+
+1. Conexión: Azure MCP conectado con `AZURE_TOKEN_CREDENTIALS=AzureCliCredential` y `AZURE_TENANT_ID=dee9f998-…`; `subscription_list` sin tenant devuelve vacía, pero las consultas con `subscription` explícito funcionan.
+2. Firewall de `sql-tobotex-pc3`: regla `ClientIPAddress_2026-11-23_19-26-32` para `190.232.218.9`; si Power BI Desktop se ejecuta desde otra red, agregar la IP pública correspondiente.
+3. Tobotex ya contiene el modelo y los lotes ejecutados: `ctl.lote` registra L0–L3, LX, reenvíos y fallas simuladas; `ctl.corte_vigente=6` (`C-20261123-06`). Esto es evidencia SQL observada, no una ejecución hecha en esta sesión.
+4. Se crearon las vistas de dimensiones de `sql/fase3/20_dimensiones_powerbi.sql` en `sqldb-tobotex`: `bi.v_dim_fecha` (365), `bi.v_dim_tienda_bi` (2), `bi.v_dim_marca_bi` (10), `bi.v_dim_producto_bi` (5). Las comprobaciones de duplicados devolvieron cero filas.
+5. Se creó el usuario contenido de Entra `edward_oliva2002@outlook.com` en `sqldb-tobotex` y `sqldb-control`, con `GRANT CONNECT` y sin contraseña nueva. En Tobotex tiene `GRANT SELECT ON SCHEMA::bi` y `DENY SELECT` en `ctl`, `cur`, `quar`, `stg`, `trusted`. En Control sólo está el usuario; no se creó `bi` ni otros esquemas para no romper `SQL query 1.sql`.
+6. No se creó `sqldb-test`, no se publicó ADF, no se asignó el rol de Storage a la identidad de ADF, no se generó `.pbix` y no se publicó en Power BI Service. `az consumption budget list` devolvió `[]`: no hay presupuesto configurado.
+7. Los pasos para conectarse y el detalle de las figuras F3-01 a F3-10 están en `powerbi/conexion_directquery.md` y `powerbi/figuras_evidencia.md`.

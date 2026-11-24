@@ -1,7 +1,8 @@
 # Scripts SQL propuestos — Fase 3
 
-> **No ejecutados.** Versiones locales derivadas de `sql/Querys/`. Validar primero en
-> `sqldb-test`; no reemplazar las bases del caso ni los originales de Fase 2.
+> Versiones locales derivadas de `sql/Querys/`. `20_dimensiones_powerbi.sql` **sí fue ejecutado**
+> en `sqldb-tobotex` el 23/11/2026 para habilitar Power BI. El resto permanece como propuesta:
+> `sqldb-test` no existe y las bases del caso/no se han reemplazado.
 
 | Orden | Archivo | Manual | Uso |
 |---:|---|---|---|
@@ -10,7 +11,7 @@
 | 3 | `02_publicacion_reforzada.sql` | §4.5 | Reemplaza `ctl.sp_publicar_corte` de Query 11: bloqueo, estado candidato, objetos listos, lote no bloqueado, reconciliación y rollback. |
 | 4 | `03_usuarios_permisos.sql` | §5.1 | GRANT/DENY para `etl_loader` y `bi_reader` en cada base. Sin secretos. |
 | 5 | `04_verificacion_despliegue.sql` | §4.6, §12.1 | Comprobaciones de lectura posteriores al despliegue. |
-| 6 | `20_dimensiones_powerbi.sql` | §9.1 | Vistas `bi.v_dim_*` para el lector BI. |
+| 6 | `20_dimensiones_powerbi.sql` | §9.1 | Vistas `bi.v_dim_*` para el lector BI. **Ejecutado en Tobotex.** |
 | 7 | `21_control_dimensiones.sql` | §8.3 | Productos P1/P2 y motivo CONTROL en `sqldb-control`. |
 
 ## Decisiones documentadas

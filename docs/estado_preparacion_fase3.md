@@ -1,6 +1,6 @@
 # Preparación local de fase 3 — estado y línea de corte
 
-Este documento registra **qué se hizo en el repositorio** siguiendo `MANUAL_FASE_3_AZURE_POWER_BI.md` y **dónde se detuvo el trabajo**. No acredita despliegue en Azure ni conexión con Power BI.
+Este documento registra **qué se hizo en el repositorio** siguiendo `MANUAL_FASE_3_AZURE_POWER_BI.md` y **dónde se detuvo el trabajo**. La verificación cloud posterior del 23/11/2026 está registrada en `estado_relevo.md`; este archivo conserva la línea de corte original. No acredita conexión con Power BI.
 
 ## Línea de corte
 
@@ -8,8 +8,8 @@ Se completó todo el trabajo que puede ejecutarse sobre archivos locales. Se det
 
 - ✅ §1 Inventario y decisiones previas (parte local).
 - ✅ §3 Preparar archivos, contratos y almacenamiento (parte local; no se suben archivos).
-- ✅ §4 Despliegue SQL (solo scripts versionados; **no ejecutados**).
-- ✅ §5 Usuarios y conexiones (plantillas sin secretos; **no creados**).
+- ✅ §4 Despliegue SQL (scripts versionados; `20_dimensiones_powerbi.sql` ejecutado después en Tobotex).
+- ✅ §5 Usuarios y conexiones (plantillas sin secretos; `etl_loader`/`bi_reader` ya existían y se añadió el usuario Entra de Power BI).
 - ✅ §6 Pipeline Data Factory (JSON preparados; **no publicados**).
 - ✅ §7 Carga manual de respaldo (script ajustado; **no ejecutado**).
 - ✅ §8 Adaptación del Anexo E (datos adaptados generados; **no cargados**).
@@ -38,12 +38,12 @@ Se completó todo el trabajo que puede ejecutarse sobre archivos locales. Se det
 
 ## Bloqueos registrados antes de cloud
 
-1. Sustituir todos los marcadores `TU_` por nombres reales y rellenar `docs/estado_relevo.md`.
+1. Sustituir los marcadores `TU_` de las plantillas ADF por nombres reales antes de publicar (el inventario de recursos ya está en `docs/estado_relevo.md`).
 2. Decidir la política de hashes LF/CRLF (B-001) antes de usar la verificación estricta como compuerta.
 3. Aprobar documentalmente el umbral C8 del control (B-002) o registrar incompatibilidad.
 4. Cambiar credenciales si las de Query 7 estuvieron activas (B-003).
-5. Ejecutar los scripts en `sqldb-test` **antes** de tocar las bases del caso.
+5. Crear/validar `sqldb-test` si se requiere repetir despliegues; no existe actualmente y no es necesario para conectar Power BI a Tobotex.
 
 ## Siguiente acción concreta
 
-Abrir Azure Portal y ejecutar el manual desde **§2.1 Grupo y presupuesto**. Después de crear cada recurso, volver a `docs/estado_relevo.md` y sustituir «Planeado» por el nombre real y la evidencia correspondiente.
+Para construir el informe: abrir Power BI Desktop con `powerbi/conexion_directquery.md` y seguir `powerbi/figuras_evidencia.md`. Para ADF o costos, revisar primero el inventario real en `docs/estado_relevo.md`.

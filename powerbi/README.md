@@ -11,11 +11,12 @@
 | `paginas.md` | Especificación de las cuatro páginas (§10.7). |
 | `conciliacion.sql` | Consultas de conciliación SQL–Power BI tras L2 (§10.8). |
 | `ESTADO_LOCAL.md` | Línea de corte y lo que falta para evidencia. |
+| `figuras_evidencia.md` | Guía para producir F3-01 a F3-10 con nombres reales y capturas. |
 
 ## Requisitos (pendientes de aplicar)
 
-- Conectar con `bi_reader`, nunca `sqladmin`; usar vistas `bi.*`.
-- Crear primero `bi.v_dim_*` con `sql/fase3/20_dimensiones_powerbi.sql` (no ejecutado).
+- Conectar con `edward_oliva2002@outlook.com` (Entra, recomendado) o `bi_reader` (SQL); nunca `sqladmin`/`tobotex`; usar vistas `bi.*`.
+- `bi.v_dim_*` ya creadas en `sqldb-tobotex` con `sql/fase3/20_dimensiones_powerbi.sql`.
 - Mostrar corte publicado, fecha/hora de publicación y períodos revisados.
 - Para P6, capturas con filtro, corte y KPI conciliado al centavo.
 - DirectQuery es la ruta principal; Import exige actualizar después de cada publicación.

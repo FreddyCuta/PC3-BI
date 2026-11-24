@@ -2,7 +2,7 @@
 
 Repositorio del proyecto **PC3** para el caso Tobotex. Contiene la estructura base, documentación de trabajo y plantillas para ejecutar la **Fase 3** (pipeline parametrizado, publicación segura, pruebas P1–P8, Capítulo 3, conclusiones, anexos y paquete reproducible).
 
-> **Estado:** preparación local de la Fase 3 completada hasta el inicio del manual §2. Hay scripts SQL versionados, contratos, prevalidaciones, adaptación del Anexo E, plantillas ADF, medidas/DAX y consultas P1–P8. **No se crearon recursos Azure, no se publicó ADF, no se conectó Power BI y no hay resultados observados.** Todo lo pendiente sigue marcado `PENDIENTE`.
+> **Estado:** preparación local completada y **acceso real a Azure verificado (23/11/2026)**. Los recursos del caso ya existen; `sqldb-tobotex` contiene el modelo y los lotes ejecutados, y se preparó el acceso de sólo lectura para Power BI. **No se publicó ADF, no se generó `.pbix`, no se publicó en Power BI Service y no se creó `sqldb-test`.** Lo que no tiene evidencia sigue marcado `PENDIENTE`.
 >
 > Punto de corte detallado: [`docs/estado_preparacion_fase3.md`](docs/estado_preparacion_fase3.md). Inventario y accesos: [`docs/estado_relevo.md`](docs/estado_relevo.md).
 
@@ -56,14 +56,14 @@ PC3-BI/
   informe/                    # Capítulos y anexos en plantilla
   powerbi/
     medidas.dax, conexion_directquery.md, modelo_relaciones.md
-    paginas.md, conciliacion.sql, ESTADO_LOCAL.md
-    exportaciones/            # PENDIENTE: no hay .pbix ni capturas
+    paginas.md, conciliacion.sql, ESTADO_LOCAL.md, figuras_evidencia.md
+    exportaciones/figuras/    # PENDIENTE: no hay capturas
   pruebas/
     bitacora_pruebas.csv      # 14 filas PENDIENTE
     consultas/                # 00_conciliacion, P1..P8 + variantes control y P7
   sql/
     Querys/                   # SQL original de Fase 2 (no modificado)
-    fase3/                    # 00..04, 20, 21: scripts propuestos, no ejecutados
+    fase3/                    # 00..04, 20, 21; 20 ejecutado en Tobotex, resto propuesto
 ```
 
 ## Preparación local lista (pendiente de aplicación en nube)
@@ -71,15 +71,15 @@ PC3-BI/
 | Bloque | Artefacto | Estado |
 |---|---|---|
 | §3 Relevo y archivos | `docs/estado_relevo.md`, `docs/estado_preparacion_fase3.md`, `evidencias/relevo/*.json`, `contratos/` | Listo (9/9 archivos aceptados con `--permitir-crlf`; JSONL 0 problemas) |
-| §4 Scripts SQL | `sql/fase3/00_calendario_2026.sql` … `21_control_dimensiones.sql` | Listos para validar en `sqldb-test`; **no ejecutados** |
-| §5 Usuarios | `sql/fase3/03_usuarios_permisos.sql` | Permisos versionados; secretos y usuarios reales **PENDIENTE** |
+| §4 Scripts SQL | `sql/fase3/00_calendario_2026.sql` … `21_control_dimensiones.sql` | Modelo ya desplegado en `sqldb-tobotex`; `sqldb-test` no existe; Control vacía |
+| §5 Usuarios | `sql/fase3/03_usuarios_permisos.sql` | `etl_loader`/`bi_reader` verificados; usuario Entra `edward_oliva2002@outlook.com` creado para Power BI |
 | §6 ADF | `adf/**` | Plantillas locales; **no importadas, publicadas ni ejecutadas** |
 | §7 Carga manual | `carga/Carga/carga/cargar_lote.py` (`--umbral`) | Adaptación lista; conexión y ejecución **PENDIENTE** |
 | §8 Control | `carga/Carga/adaptar_control.py`, `datos/control_adaptado/`, `sql/fase3/21_control_dimensiones.sql` | Adaptación generada con hashes propios; umbral `0.25` requiere aprobación documental |
-| §§9–10 Power BI | `powerbi/medidas.dax`, `conexion_directquery.md`, `modelo_relaciones.md`, `paginas.md`, `conciliacion.sql` | Especificación local; **sin `.pbix` ni capturas** |
-| §12 Pruebas | `pruebas/bitacora_pruebas.csv`, `pruebas/consultas/*.sql` | 14 filas `PENDIENTE`; consultas sin ejecutar |
+| §§9–10 Power BI | `powerbi/medidas.dax`, `conexion_directquery.md`, `modelo_relaciones.md`, `paginas.md`, `conciliacion.sql`, `figuras_evidencia.md` | SQL listo; **sin `.pbix` ni capturas** |
+| §12 Pruebas | `pruebas/bitacora_pruebas.csv`, `pruebas/consultas/*.sql` | 14 filas `PENDIENTE`; `ctl.lote` ya contiene RunIds y resultados SQL observados que aún deben volcarse a la bitácora |
 
-**Fuera de alcance de esta preparación:** crear recursos Azure, desplegar/publicar ADF, ejecutar SQL en la nube, conectar o publicar Power BI, inventar RunIds/costos/evidencias. No reutilizar secretos de `sql/Querys/SQL query 7.sql`.
+**Sigue fuera de alcance sin confirmación explícita:** publicar ADF, crear `sqldb-test`, publicar en Power BI Service, asignar roles de Storage o inventar costos/evidencias. No reutilizar secretos de `sql/Querys/SQL query 7.sql`.
 
 ## Guías base
 
@@ -109,16 +109,16 @@ PC3-BI/
 
 | Componente | Valor | Estado |
 |---|---|---|
-| Suscripción Azure | `<suscripcion>` | PENDIENTE |
-| Grupo de recursos | `rg-tobotex-pc3` | PENDIENTE |
-| Región | `<region>` | PENDIENTE |
-| ADLS Gen2 | `sttobotexpc3<ini>` | PENDIENTE |
-| SQL Server | `sql-tobotex-pc3-<ini>` | PENDIENTE |
-| DB Tobotex | `sqldb-tobotex` | PENDIENTE |
-| DB Control | `sqldb-control` | PENDIENTE |
-| DB Test | `sqldb-test` | PENDIENTE |
-| Data Factory | `adf-tobotex-pc3-<ini>` | PENDIENTE |
-| Power BI | Desktop / exportación PDF | PENDIENTE |
+| Suscripción Azure | `f57db137-2f2a-49e8-83f3-990b2c786c01` | Verificada |
+| Grupo de recursos | `rg-tobotex-pc3` | Verificado |
+| Región | `chilecentral` | Verificada |
+| ADLS Gen2 | `sttobotexpc3` | Verificado |
+| SQL Server | `sql-tobotex-pc3.database.windows.net` | Verificado |
+| DB Tobotex | `sqldb-tobotex` | Verificada; corte 6 |
+| DB Control | `sqldb-control` | Verificada; vacía |
+| DB Test | `sqldb-test` | No existe |
+| Data Factory | `adf-tobotex-pc3` | Verificado; pipeline `pl_ingestar_lote_tobotex` |
+| Power BI | `sql-tobotex-pc3` / `sqldb-tobotex` / Entra `edward_oliva2002@outlook.com` | SQL listo; `.pbix` PENDIENTE |
 
 ## Limpieza
 
