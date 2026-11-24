@@ -12,6 +12,16 @@ sí se ejecutó en `sqldb-tobotex` y `sqldb-control` el 23/11/2026; el corte pub
 
 Conciliación común: `00_conciliacion.sql`.
 Consultas de seguridad/costo: `P7_A.sql`, `P7_B.sql`, `P7_EXCEPT.sql`, `P7_permisos.sql`.
+Versiones ya parametrizadas con el corte real 6 (`C-20261123-06`), creadas el 23/11/2026:
+`P7_A_corte6.sql`, `P7_B_corte6.sql`, `P7_EXCEPT_corte6.sql`. Úsalas para F3-09 sin editar el
+placeholder `1`. Verificación realizada: A y B devuelven 8 filas idénticas; ambos `EXCEPT`
+devuelven 0 filas y `filas_a = filas_b = 8`.
+
+Variantes **`*_literal.sql`** (`P7_A_corte6_literal.sql`, `P7_B_corte6_literal.sql`,
+`P7_EXCEPT_corte6_literal.sql`): misma lógica pero sin `DECLARE @corte`, con el `6` escrito en las
+llamadas a `bi.fn_despacho`/`bi.fn_reclamo`. Se crearon porque DBeaver separa los statements por
+`;` y pierde el ámbito de `@corte` (*Must declare the scalar variable*). Usa estas variantes en
+DBeaver; en SSMS/Azure Data Studio sirve cualquiera.
 Recuperación de esquema: `P5_recuperacion.sql`.
 
 ## Convención sugerida (de la versión original)

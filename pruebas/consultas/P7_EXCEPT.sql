@@ -1,6 +1,9 @@
 -- P7 equivalencia A vs B. Manual §12.8.
 -- Materializar cada SELECT sin ORDER BY en #A y #B en la MISMA sesión.
 -- @corte = 1 es placeholder: sustituir por el mismo corte usado en P7_A y P7_B.
+-- Si la sesión ya tiene #A/#B de una ejecución anterior, limpiarlas primero.
+IF OBJECT_ID('tempdb..#A') IS NOT NULL DROP TABLE #A;
+IF OBJECT_ID('tempdb..#B') IS NOT NULL DROP TABLE #B;
 DECLARE @corte int = 1;
 ;WITH b AS (
     SELECT periodo, tienda, SUM(importe_pen) AS bruto
