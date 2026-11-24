@@ -1,0 +1,15 @@
+{
+  "lote": "L2",
+  "fecha_recepcion": "2026-04-20",
+  "origen": "control_anexoE",
+  "adaptacion": "1.0",
+  "fechas_recepcion": "supuestos de prueba, no datos originales",
+  "archivos": [
+    {
+      "archivo": "reclamo_L2.jsonl",
+      "filas": 1,
+      "bytes": 207,
+      "sha256": "16324bca4de2c8d34feec4ab4f1a0fde2f4eabeb183196fed265aa83ce0f2492"
+    }
+  ]
+}

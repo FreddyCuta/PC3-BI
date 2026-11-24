@@ -1,0 +1,27 @@
+{
+  "lote": "L0",
+  "fecha_recepcion": "2026-04-01",
+  "origen": "control_anexoE",
+  "adaptacion": "1.0",
+  "fechas_recepcion": "supuestos de prueba, no datos originales",
+  "archivos": [
+    {
+      "archivo": "despacho_L0.csv",
+      "filas": 4,
+      "bytes": 428,
+      "sha256": "3447b709e112280d655f37936025af6414a005816114f66c54c1f7280e2e5536"
+    },
+    {
+      "archivo": "tienda_L0.csv",
+      "filas": 3,
+      "bytes": 126,
+      "sha256": "c678220e96cec020b51f673d5534235b209671f9044e289e6e69e40a24b21d77"
+    },
+    {
+      "archivo": "reclamo_L0.jsonl",
+      "filas": 3,
+      "bytes": 622,
+      "sha256": "1675f68a9ea4f2f389ab9d7c98bcb138579a201c3875823a57c8b2f373f93376"
+    }
+  ]
+}

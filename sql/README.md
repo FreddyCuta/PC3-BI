@@ -19,6 +19,11 @@ Colocar aquí scripts SQL de Fase 2/Fase 3 para el caso Tobotex.
 13. `12_costos_consultas.sql` (si aplica)
 14. `98_reset_datos.sql`, `99_limpieza.sql` (uso controlado)
 
+## Fase 3 (preparación local, no ejecutada)
+
+Los scripts propuestos están en `fase3/` con orden y decisiones documentadas en
+`fase3/README.md`. Los originales de Fase 2 en `Querys/` se conservan sin modificar.
+
 ## Reglas
 
 - No incluir contraseñas reales.

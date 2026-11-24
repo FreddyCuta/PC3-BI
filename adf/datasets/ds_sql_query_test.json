@@ -1,0 +1,9 @@
+{
+  "name": "ds_sql_query_test",
+  "properties": {
+    "description": "Dataset de soporte para la base vacía de prueba.",
+    "type": "AzureSqlTable",
+    "linkedServiceName": { "referenceName": "ls_sql_test", "type": "LinkedServiceReference" },
+    "typeProperties": { "schema": "stg", "table": "despacho" }
+  }
+}

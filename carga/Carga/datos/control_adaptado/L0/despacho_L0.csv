@@ -1,0 +1,5 @@
+id_movimiento,version,fecha_salida,tienda,marca,producto,contrato,detalle,cantidad_contratada,cantidad_despachada,importe_pen,fecha_actualizacion_origen
+V01,1,2026-01-10,S1,CONTROL,P1,V01,1,1,1,100.00,2026-04-01T00:00:00
+V02,1,2026-02-10,S1,CONTROL,P1,V02,1,1,1,120.00,2026-04-01T00:00:00
+V03,1,2026-03-10,S1,CONTROL,P2,V03,1,1,1,80.00,2026-04-01T00:00:00
+V04,1,2026-03-12,S2,CONTROL,P1,V04,1,1,1,40.00,2026-04-01T00:00:00

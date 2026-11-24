@@ -1,5 +1,12 @@
 """Carga manual registrada de un lote a Azure SQL. Hace lo mismo que el pipeline de Data Factory,
-en el mismo orden y llamando a los mismos procedimientos almacenados."""
+en el mismo orden y llamando a los mismos procedimientos almacenados.
+
+Adaptación local (manual §8.3): el argumento --umbral envía el tercer parámetro
+C8 sólo a trusted.sp_merge_despacho y trusted.sp_merge_reclamo.
+Tobotex usa 0.20; el fixture de control adaptado usa 0.25 (decisión documentada,
+no regla oficial). trusted.sp_merge_tienda se llama siempre con dos argumentos.
+Requiere que los procedimientos parametrizados de sql/fase3 estén desplegados.
+"""
 import argparse, csv, json, os, sys, time
 import pyodbc
 
@@ -41,7 +48,15 @@ def main():
     ap.add_argument("--lote", required=True)
     ap.add_argument("--carpeta", default=os.path.join("datos", "tobotex"))
     ap.add_argument("--falla", default="no", choices=["no", "tras_despacho"])
+    ap.add_argument("--umbral", default="0.2000",
+                    help="Umbral C8 para despacho y reclamo; 0.2000 Tobotex, 0.2500 control adaptado")
     a = ap.parse_args()
+    try:
+        umbral = float(a.umbral)
+    except ValueError:
+        sys.exit("--umbral debe ser decimal, por ejemplo 0.2000")
+    if not 0 <= umbral <= 1:
+        sys.exit("--umbral debe estar entre 0 y 1")
     dir_lote = os.path.join(a.carpeta, a.lote)
     manif = json.load(open(os.path.join(dir_lote, "manifiesto.json")))
     run_id = f"manual-{a.lote}-{time.strftime('%Y%m%dT%H%M%S')}"
@@ -66,8 +81,9 @@ def main():
             if cabecera is None:
                 cur.execute("EXEC ctl.sp_validar_contrato ?, ?, ?, NULL", a.lote, intento, fuente)
             print(f"  {fuente}: {len(datos)} filas a staging")
-        for sp in ["trusted.sp_merge_tienda", "trusted.sp_merge_despacho", "trusted.sp_merge_reclamo"]:
-            cur.execute(f"EXEC {sp} ?, ?", a.lote, intento)
+        cur.execute("EXEC trusted.sp_merge_tienda ?, ?", a.lote, intento)
+        for sp in ["trusted.sp_merge_despacho", "trusted.sp_merge_reclamo"]:
+            cur.execute(f"EXEC {sp} ?, ?, ?", a.lote, intento, umbral)
         corte = uno(cur, "EXEC ctl.sp_abrir_corte ?, ?", a.lote, intento)[0]
         if corte < 0:
             print("  sin cambios de negocio: se conserva el corte publicado"); return

@@ -2,7 +2,9 @@
 
 Repositorio del proyecto **PC3** para el caso Tobotex. Contiene la estructura base, documentación de trabajo y plantillas para ejecutar la **Fase 3** (pipeline parametrizado, publicación segura, pruebas P1–P8, Capítulo 3, conclusiones, anexos y paquete reproducible).
 
-> **Estado:** estructura y documentación inicial creadas. La ejecución real en Azure, las evidencias y los resultados deben completarse durante el desarrollo.
+> **Estado:** preparación local de la Fase 3 completada hasta el inicio del manual §2. Hay scripts SQL versionados, contratos, prevalidaciones, adaptación del Anexo E, plantillas ADF, medidas/DAX y consultas P1–P8. **No se crearon recursos Azure, no se publicó ADF, no se conectó Power BI y no hay resultados observados.** Todo lo pendiente sigue marcado `PENDIENTE`.
+>
+> Punto de corte detallado: [`docs/estado_preparacion_fase3.md`](docs/estado_preparacion_fase3.md). Inventario y accesos: [`docs/estado_relevo.md`](docs/estado_relevo.md).
 
 ## Objetivo
 
@@ -27,45 +29,57 @@ Implementar y evidenciar un flujo de ingesta y publicación controlada en la nub
 PC3-BI/
   README.md
   .gitignore
-  adf/
-    linked_services/          # JSON exportado de linked services
-    datasets/                 # JSON exportado de datasets
-    pipelines/                # JSON exportado de pipelines
-    triggers/                 # Triggers programados (si aplica)
-  carga/
-    cargar_lote.py            # Carga manual registrada / respaldo
-  contratos/                  # Contratos versionados por fuente (JSON)
-  datos/
-    generador/                # Generadores y cálculos independientes
-    tobotex/                  # L0-L3, LX + manifiestos
-    control_anexoE/           # L0-L3 control + manifiestos
+  adf/                        # Plantillas LOCALES (no exportadas ni publicadas)
+    linked_services/          # ls_adls, ls_sql_{tobotex,control,test}.json (sin secretos)
+    datasets/                 # ds_csv, ds_jsonl, ds_manifiesto, ds_sql_query*, ds_stg_* 
+    pipelines/                # pl_cargar_lote, pl_tobotex, pl_control, pl_registrar_falla*
+    README.md
+  carga/Carga/
+    carga/cargar_lote.py      # Carga manual registrada; añade --umbral (§8.3)
+    verificar_archivos.py     # Prevalidación de manifiestos (§3.1)
+    validar_jsonl.py          # Prevalidación estructural JSONL (§3.2)
+    adaptar_control.py        # Anexo E adaptado reproducible (§8.2)
+    datos/generador/          # Generadores y cálculo independiente
+    datos/tobotex/            # L0-L3, LX + manifiestos (originales)
+    datos/control_anexoE/     # L0-L3 control originales
+    datos/control_adaptado/   # Adaptación versionada (no toca originales)
+  contratos/                  # despacho/reclamo/tienda v1.0 + POLITICAS_CASO.md
   docs/
-    guia_fase2_tecnica.md     # Referencia técnica Fase 2
-    guia_fase3_paso_a_paso.md # Guía operativa Fase 3
-    arquitectura.md           # Diseño A/B, decisión y diagrama
-    reglas_calidad_publicacion.md
-    seguridad_costos.md
-    pruebas.md                # Plan y criterios P1-P8
-    estado_relevo.md          # Plantilla de relevo Fase 2 -> Fase 3
+    estado_preparacion_fase3.md
+    estado_relevo.md
+    guia_fase2_tecnica.md, guia_fase3_paso_a_paso.md
+    arquitectura.md, reglas_calidad_publicacion.md, seguridad_costos.md, pruebas.md
+    checklist_entrega.md
   evidencias/
-    relevo/ P1..P8/ kpis/ modelo/ costos/ seguridad/
-  informe/
-    capitulo_3.md
-    conclusiones.md
-    anexo_c.md
-    anexo_d.md
-    anexo_f.md
-    referencias.md
+    relevo/                   # verificación de archivos y validación JSONL (reales, locales)
+    P1..P8/, kpis/, modelo/, costos/, seguridad/   # PENDIENTES
+  informe/                    # Capítulos y anexos en plantilla
   powerbi/
-    tobotex_pc3.pbix          # Tablero (cuando esté disponible)
-    exportaciones/            # PDF/capturas exportadas
+    medidas.dax, conexion_directquery.md, modelo_relaciones.md
+    paginas.md, conciliacion.sql, ESTADO_LOCAL.md
+    exportaciones/            # PENDIENTE: no hay .pbix ni capturas
   pruebas/
-    bitacora_pruebas.csv      # Bitácora P1-P8
-    consultas/                # SQL de verificación por prueba
+    bitacora_pruebas.csv      # 14 filas PENDIENTE
+    consultas/                # 00_conciliacion, P1..P8 + variantes control y P7
   sql/
-    00..99 scripts Tobotex
-    control/                  # Scripts adaptados Anexo E
+    Querys/                   # SQL original de Fase 2 (no modificado)
+    fase3/                    # 00..04, 20, 21: scripts propuestos, no ejecutados
 ```
+
+## Preparación local lista (pendiente de aplicación en nube)
+
+| Bloque | Artefacto | Estado |
+|---|---|---|
+| §3 Relevo y archivos | `docs/estado_relevo.md`, `docs/estado_preparacion_fase3.md`, `evidencias/relevo/*.json`, `contratos/` | Listo (9/9 archivos aceptados con `--permitir-crlf`; JSONL 0 problemas) |
+| §4 Scripts SQL | `sql/fase3/00_calendario_2026.sql` … `21_control_dimensiones.sql` | Listos para validar en `sqldb-test`; **no ejecutados** |
+| §5 Usuarios | `sql/fase3/03_usuarios_permisos.sql` | Permisos versionados; secretos y usuarios reales **PENDIENTE** |
+| §6 ADF | `adf/**` | Plantillas locales; **no importadas, publicadas ni ejecutadas** |
+| §7 Carga manual | `carga/Carga/carga/cargar_lote.py` (`--umbral`) | Adaptación lista; conexión y ejecución **PENDIENTE** |
+| §8 Control | `carga/Carga/adaptar_control.py`, `datos/control_adaptado/`, `sql/fase3/21_control_dimensiones.sql` | Adaptación generada con hashes propios; umbral `0.25` requiere aprobación documental |
+| §§9–10 Power BI | `powerbi/medidas.dax`, `conexion_directquery.md`, `modelo_relaciones.md`, `paginas.md`, `conciliacion.sql` | Especificación local; **sin `.pbix` ni capturas** |
+| §12 Pruebas | `pruebas/bitacora_pruebas.csv`, `pruebas/consultas/*.sql` | 14 filas `PENDIENTE`; consultas sin ejecutar |
+
+**Fuera de alcance de esta preparación:** crear recursos Azure, desplegar/publicar ADF, ejecutar SQL en la nube, conectar o publicar Power BI, inventar RunIds/costos/evidencias. No reutilizar secretos de `sql/Querys/SQL query 7.sql`.
 
 ## Guías base
 

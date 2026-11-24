@@ -1,0 +1,41 @@
+{
+  "fuente": "reclamo",
+  "version_contrato": "1.0",
+  "formato": {
+    "tipo": "JSONL",
+    "codificacion": "UTF-8",
+    "estructura": "un objeto JSON por linea, sin arreglo envolvente",
+    "validacion": "prevalidacion manual con carga/Carga/validar_jsonl.py; ADF debe inspeccionar cada objeto (§6.4)"
+  },
+  "ruta_raw": "raw/tobotex/<lote>/reclamo_<lote>.jsonl",
+  "clave_negocio": ["id_reclamo"],
+  "regla_version": "no aplica; un id_reclamo repetido con distinto contenido se rechaza (C3)",
+  "granularidad": "una fila por reclamo",
+  "campos": [
+    {"campo": "id_reclamo", "tipo": "string", "requerido": true},
+    {"campo": "id_movimiento", "tipo": "string", "requerido": true},
+    {"campo": "fecha_reclamo", "tipo": "date", "formato": "YYYY-MM-DD", "requerido": true},
+    {"campo": "cantidad_devuelta", "tipo": "int", "requerido": true, "representacion_aceptada": "entero JSON o cadena de enteros"},
+    {"campo": "importe_devuelto_pen", "tipo": "decimal(18,2)", "formato": "punto decimal", "requerido": true, "representacion_aceptada": "numero JSON o cadena decimal con punto; TRY_CAST en staging"},
+    {"campo": "motivo", "tipo": "string", "requerido": false, "politica": "vacio o desconocido -> SIN_MOTIVO, es_valido=0; no rechazar el reclamo"},
+    {"campo": "fecha_actualizacion_origen", "tipo": "datetime", "requerido": false}
+  ],
+  "cambios_admitidos": ["Campos opcionales adicionales que no rompan la lectura objeto por linea."],
+  "cambios_no_admitidos": ["Ausencia de propiedades requeridas (C1 estructural).", "Renombre de propiedades requeridas."],
+  "distinciones": {
+    "ausencia_propiedad": "C1 estructural: bloquea el lote segun politica documentada.",
+    "valor_nulo": "C4 por fila.",
+    "tipo_invalido": "C4 por fila."
+  },
+  "controles": {
+    "C1": "Cada objeto debe contener las propiedades requeridas.",
+    "C2": "id_reclamo + hash repetidos: omitir.",
+    "C3": "id_reclamo con hash distinto: rechazar.",
+    "C4": "Propiedad requerida nula o tipo invalido: rechazar fila.",
+    "C5": "Cantidad e importe devueltos positivos.",
+    "C6": "Debe apuntar a un movimiento valido, admitiendo referencias del mismo lote si el despacho ya se proceso.",
+    "C7": "Ventana de correccion de 90 dias.",
+    "C8": "Umbral por fuente; ver POLITICAS_CASO.md."
+  },
+  "coherencia": "Debe coincidir con ctl.contrato_campo de SQL query 6.sql y con ctl.sp_validar_contrato."
+}

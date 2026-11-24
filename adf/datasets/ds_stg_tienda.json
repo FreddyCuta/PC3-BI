@@ -1,0 +1,8 @@
+{
+  "name": "ds_stg_tienda",
+  "properties": {
+    "type": "AzureSqlTable",
+    "linkedServiceName": { "referenceName": "ls_sql_tobotex", "type": "LinkedServiceReference" },
+    "typeProperties": { "schema": "stg", "table": "tienda" }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "name": "pl_registrar_falla_control",
+  "properties": {
+    "description": "Manejador de fallo reutilizable (manual §6.7). Registra el error y termina en Fail; no convierte la ejecución en exitosa.",
+    "parameters": {
+      "lote_id": { "type": "String" },
+      "intento": { "type": "Int" },
+      "mensaje": { "type": "String" }
+    },
+    "activities": [
+      {
+        "name": "sp_marcar_falla",
+        "type": "SqlServerStoredProcedure",
+        "typeProperties": {
+          "storedProcedureName": "ctl.sp_marcar_falla",
+          "storedProcedureParameters": {
+            "lote_id": { "value": "@pipeline().parameters.lote_id", "type": "String" },
+            "intento": { "value": "@pipeline().parameters.intento", "type": "Int" },
+            "mensaje": { "value": "@pipeline().parameters.mensaje", "type": "String" }
+          }
+        },
+        "linkedServiceName": {
+          "referenceName": "ls_sql_control",
+          "type": "LinkedServiceReference"
+        }
+      },
+      {
+        "name": "fail_final",
+        "type": "Fail",
+        "dependsOn": [
+          { "activity": "sp_marcar_falla", "dependsOnConditions": ["Succeeded"] }
+        ],
+        "typeProperties": { "message": "Error registrado; la ejecución termina fallida" }
+      }
+    ]
+  }
+}

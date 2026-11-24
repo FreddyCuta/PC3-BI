@@ -1,0 +1,14 @@
+{
+  "name": "ls_sql_test",
+  "properties": {
+    "description": "Plantilla local para la base vacía de prueba. Sin secretos.",
+    "type": "AzureSqlDatabase",
+    "typeProperties": {
+      "server": "sql-tobotex-pc3-TUINICIALES.database.windows.net",
+      "database": "sqldb-test",
+      "encrypt": "mandatory",
+      "trustServerCertificate": false,
+      "authenticationType": "SystemAssignedManagedIdentity"
+    }
+  }
+}

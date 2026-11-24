@@ -1,0 +1,67 @@
+{
+  "name": "pl_cargar_lote",
+  "properties": {
+    "description": "Pipeline principal. Concurrencia 1. No se ha publicado ni ejecutado en Azure; es una plantilla local del manual §6.2.",
+    "concurrency": 1,
+    "parameters": {
+      "caso": { "type": "String", "defaultValue": "tobotex" },
+      "lote_id": { "type": "String", "defaultValue": "L0" },
+      "fecha_recepcion": { "type": "String", "defaultValue": "2026-10-01" },
+      "simular_falla": { "type": "String", "defaultValue": "no" }
+    },
+    "activities": [
+      {
+        "name": "sw_caso",
+        "type": "Switch",
+        "typeProperties": {
+          "on": { "value": "@pipeline().parameters.caso", "type": "Expression" },
+          "cases": [
+            {
+              "value": "tobotex",
+              "activities": [
+                {
+                  "name": "exec_tobotex",
+                  "type": "ExecutePipeline",
+                  "typeProperties": {
+                    "pipeline": { "referenceName": "pl_tobotex", "type": "PipelineReference" },
+                    "waitOnCompletion": true,
+                    "parameters": {
+                      "lote_id": { "value": "@pipeline().parameters.lote_id", "type": "Expression" },
+                      "fecha_recepcion": { "value": "@pipeline().parameters.fecha_recepcion", "type": "Expression" },
+                      "simular_falla": { "value": "@pipeline().parameters.simular_falla", "type": "Expression" }
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "value": "control",
+              "activities": [
+                {
+                  "name": "exec_control",
+                  "type": "ExecutePipeline",
+                  "typeProperties": {
+                    "pipeline": { "referenceName": "pl_control", "type": "PipelineReference" },
+                    "waitOnCompletion": true,
+                    "parameters": {
+                      "lote_id": { "value": "@pipeline().parameters.lote_id", "type": "Expression" },
+                      "fecha_recepcion": { "value": "@pipeline().parameters.fecha_recepcion", "type": "Expression" },
+                      "simular_falla": { "value": "@pipeline().parameters.simular_falla", "type": "Expression" }
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "defaultActivities": [
+            {
+              "name": "fail_caso_invalido",
+              "type": "Fail",
+              "typeProperties": { "message": "caso debe ser tobotex o control" }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

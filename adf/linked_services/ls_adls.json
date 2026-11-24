@@ -1,0 +1,13 @@
+{
+  "name": "ls_adls",
+  "properties": {
+    "description": "Plantilla local. Sustituir el nombre real de la cuenta. Sin secretos: usa identidad asignada por sistema de ADF con rol Storage Blob Data Reader en raw y rawcontrol.",
+    "type": "AzureDataLakeStorageGen2",
+    "typeProperties": {
+      "url": "https://sttobotexpc3TUINICIALES.dfs.core.windows.net"
+    },
+    "authentication": {
+      "type": "ManagedServiceIdentity"
+    }
+  }
+}

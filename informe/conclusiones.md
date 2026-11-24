@@ -1,6 +1,11 @@
 # Conclusiones
 
 > Completar con mediciones reales. No convertir valores esperados en hallazgos ejecutados.
+>
+> Estado actual: sólo preparación local. No hay Azure, ADF ni Power BI ejecutados; los valores
+> del manual y del cálculo independiente previo son **esperados/referenciales**. Los marcadores
+> `[...]` y las evidencias de cada punto deben sustituirse por resultados observados con RunId,
+> consulta y captura antes de redactar las conclusiones definitivas.
 
 1. **Reenvío/idempotencia (P3):** `[filas nuevas]`, `[diferencia KPI]`, `[corte antes/después]`. Evidencia: `evidencias/P3/`.
 2. **Corrección tardía/SCD2 (P4):** `[período]`, `[valor previo]`, `[valor revisado]`. Evidencia: `evidencias/P4/`.

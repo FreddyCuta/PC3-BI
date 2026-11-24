@@ -1,0 +1,3 @@
+{"id_reclamo": "D01", "id_movimiento": "V02", "fecha_reclamo": "2026-02-15", "cantidad_devuelta": 1, "importe_devuelto_pen": "10.00", "motivo": "CONTROL", "fecha_actualizacion_origen": "2026-04-01T00:00:00"}
+{"id_reclamo": "D02", "id_movimiento": "V02", "fecha_reclamo": "2026-02-16", "cantidad_devuelta": 1, "importe_devuelto_pen": "5.00", "motivo": "CONTROL", "fecha_actualizacion_origen": "2026-04-01T00:00:00"}
+{"id_reclamo": "D03", "id_movimiento": "V04", "fecha_reclamo": "2026-03-15", "cantidad_devuelta": 1, "importe_devuelto_pen": "8.00", "motivo": "CONTROL", "fecha_actualizacion_origen": "2026-04-01T00:00:00"}

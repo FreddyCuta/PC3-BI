@@ -1,0 +1,14 @@
+{
+  "name": "ls_sql_control",
+  "properties": {
+    "description": "Plantilla local para la base del Anexo E adaptado. Sin secretos.",
+    "type": "AzureSqlDatabase",
+    "typeProperties": {
+      "server": "sql-tobotex-pc3-TUINICIALES.database.windows.net",
+      "database": "sqldb-control",
+      "encrypt": "mandatory",
+      "trustServerCertificate": false,
+      "authenticationType": "SystemAssignedManagedIdentity"
+    }
+  }
+}

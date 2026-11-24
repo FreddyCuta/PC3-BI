@@ -2,6 +2,11 @@
 
 La bitácora maestra está en `pruebas/bitacora_pruebas.csv`. Este anexo resume el estado y enlaza evidencia.
 
+> Preparación local: la bitácora contiene **14 filas con estado `PENDIENTE`** para P1–P8
+> (Tobotex y control adaptado, incluidas recuperación P5 y equivalencia P7). Las consultas
+> versionadas están en `pruebas/consultas/`. Ninguna fue ejecutada: no hay RunId, resultado
+> observado ni captura. No copiar valores `esperado` a la columna de hallazgos.
+
 ## Resumen
 
 | Prueba | Caso | Estado | Intentos | Evidencia principal | Observaciones |

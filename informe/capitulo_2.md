@@ -1,6 +1,11 @@
 # Capítulo 2 — Fuentes, modelo, KPIs y tablero
 
 > Responsable: Rolando (Fase 2). Completar con evidencia real en Azure/SQL/Power BI.
+>
+> La especificación local del tablero está en `powerbi/` (`medidas.dax`, `modelo_relaciones.md`,
+> `paginas.md`, `conexion_directquery.md`, `conciliacion.sql`). **No se generó `.pbix`**: las
+> relaciones, medidas y páginas están pendientes de aplicar y capturar. Cualquier KPI citado en
+> este capítulo debe contrastarse con la salida real de `bi.*`.
 
 ## 2.1 Fuentes y cortes
 

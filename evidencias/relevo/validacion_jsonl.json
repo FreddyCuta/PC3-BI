@@ -1,0 +1,24 @@
+{
+  "generado_utc": "2026-11-24T00:28:20+00:00",
+  "alcance": "prevalidación manual local; no es validación automática de ADF",
+  "resultados": [
+    {
+      "archivo": "datos/tobotex/L0/reclamo_L0.jsonl",
+      "objetos": 49,
+      "problemas": [],
+      "resultado": "OK"
+    },
+    {
+      "archivo": "datos/tobotex/L2/reclamo_L2.jsonl",
+      "objetos": 3,
+      "problemas": [],
+      "resultado": "OK"
+    },
+    {
+      "archivo": "datos/tobotex/L3/reclamo_L3.jsonl",
+      "objetos": 3,
+      "problemas": [],
+      "resultado": "OK"
+    }
+  ]
+}

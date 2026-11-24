@@ -1,0 +1,28 @@
+{
+  "name": "ds_csv",
+  "properties": {
+    "description": "CSV UTF-8 con encabezado. La estructura real se obtiene con Get Metadata; no forzar esquema estático.",
+    "type": "DelimitedText",
+    "linkedServiceName": {
+      "referenceName": "ls_adls",
+      "type": "LinkedServiceReference"
+    },
+    "parameters": {
+      "contenedor": { "type": "String", "defaultValue": "raw" },
+      "carpeta": { "type": "String", "defaultValue": "tobotex/L0" },
+      "archivo": { "type": "String", "defaultValue": "despacho_L0.csv" }
+    },
+    "typeProperties": {
+      "location": {
+        "type": "AzureBlobFSLocation",
+        "fileSystem": { "value": "@dataset().contenedor", "type": "Expression" },
+        "folderPath": { "value": "@dataset().carpeta", "type": "Expression" },
+        "fileName": { "value": "@dataset().archivo", "type": "Expression" }
+      },
+      "columnDelimiter": ",",
+      "quoteChar": "\"",
+      "firstRowAsHeader": true,
+      "encodingName": "UTF-8"
+    }
+  }
+}

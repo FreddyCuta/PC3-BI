@@ -1,0 +1,148 @@
+// Medidas del manual §10.2–10.6. Versionadas localmente; NO pegadas en un .pbix.
+// El repo no contiene .pbix. Ejecutar en Power BI Desktop tras conectar por DirectQuery.
+// Separadores: comas DAX. Si la configuración exige punto y coma, ajustar sin cambiar fórmulas.
+// Formato: K1/K2/devoluciones moneda PEN 2 decimales; K3/K4/K5/K6 porcentaje 2 decimales.
+// K3 no se multiplica por 100 en DAX: el formato porcentual ya lo hace.
+// Las vistas SQL k3_tasa_pct expresan 1,30 para 1,30 %; si se cargan directamente, /100.
+
+// --- K1, devoluciones, K2, K3 (tabla Despacho) -------------------------------
+K1 bruto PEN =
+SUM ( Despacho[importe_pen] )
+
+Devoluciones PEN =
+COALESCE ( SUM ( Reclamo[importe_devuelto_pen] ), 0 )
+
+K2 neto PEN =
+IF (
+    ISBLANK ( [K1 bruto PEN] ),
+    BLANK (),
+    [K1 bruto PEN] - [Devoluciones PEN]
+)
+
+K3 tasa devolución =
+DIVIDE ( [Devoluciones PEN], [K1 bruto PEN] )
+
+// --- K4: variación contra mes calendario anterior ----------------------------
+K1 mes anterior PEN =
+VAR MesActual = SELECTEDVALUE ( Fecha[periodo] )
+VAR InicioActual =
+    IF (
+        NOT ISBLANK ( MesActual ),
+        DATE ( VALUE ( LEFT ( MesActual, 4 ) ), VALUE ( RIGHT ( MesActual, 2 ) ), 1 )
+    )
+RETURN
+IF (
+    ISBLANK ( MesActual ),
+    BLANK (),
+    CALCULATE (
+        [K1 bruto PEN],
+        REMOVEFILTERS ( Fecha ),
+        Fecha[fecha] >= EDATE ( InicioActual, -1 ),
+        Fecha[fecha] < InicioActual
+    )
+)
+
+K4 variación mensual =
+VAR Anterior = [K1 mes anterior PEN]
+RETURN
+IF (
+    ISBLANK ( [K1 bruto PEN] ) || ISBLANK ( Anterior ),
+    BLANK (),
+    DIVIDE ( [K1 bruto PEN] - Anterior, Anterior )
+)
+
+// --- K5: cumplimiento acumulado hasta la fecha elegida -----------------------
+// Alcance: líneas presentes en despachos; no descubre contratos sin movimiento.
+K5 cumplimiento =
+VAR Limite = MAX ( Fecha[fecha] )
+VAR Lineas =
+    CALCULATETABLE (
+        SUMMARIZE (
+            Despacho,
+            Despacho[tienda],
+            Despacho[marca_codigo],
+            Despacho[contrato],
+            Despacho[detalle],
+            "ContratadaLinea", MAX ( Despacho[cantidad_contratada] ),
+            "DespachadaLinea", SUM ( Despacho[cantidad_despachada] )
+        ),
+        REMOVEFILTERS ( Fecha ),
+        Fecha[fecha] <= Limite
+    )
+VAR Cubierta =
+    SUMX ( Lineas, MIN ( [ContratadaLinea], [DespachadaLinea] ) )
+VAR Contratada = SUMX ( Lineas, [ContratadaLinea] )
+RETURN DIVIDE ( Cubierta, Contratada )
+
+Faltante acumulado =
+VAR Limite = MAX ( Fecha[fecha] )
+VAR Lineas =
+    CALCULATETABLE (
+        SUMMARIZE (
+            Despacho,
+            Despacho[tienda],
+            Despacho[marca_codigo],
+            Despacho[contrato],
+            Despacho[detalle],
+            "ContratadaLinea", MAX ( Despacho[cantidad_contratada] ),
+            "DespachadaLinea", SUM ( Despacho[cantidad_despachada] )
+        ),
+        REMOVEFILTERS ( Fecha ),
+        Fecha[fecha] <= Limite
+    )
+RETURN SUMX ( Lineas, MAX ( 0, [ContratadaLinea] - [DespachadaLinea] ) )
+
+// --- K6 y metadatos ----------------------------------------------------------
+Reclamos válidos = COUNTROWS ( Reclamo )
+
+Reclamos con motivo =
+CALCULATE ( COUNTROWS ( Reclamo ), Reclamo[motivo_valido] = 1 )
+// Si motivo_valido llega como Boolean en Power Query, usar = TRUE().
+
+K6 motivo codificado =
+DIVIDE ( COALESCE ( [Reclamos con motivo], 0 ), [Reclamos válidos] )
+
+Corte visible =
+SELECTEDVALUE ( Corte[corte_id], "Sin corte publicado" )
+
+Publicación Lima = MAX ( Corte[publicado_lima] )
+
+Estado de revisión =
+VAR RevisionesVisibles =
+    CALCULATE (
+        COUNTROWS ( Revisiones ),
+        TREATAS ( VALUES ( Fecha[periodo] ), Revisiones[periodo] )
+    )
+RETURN IF ( RevisionesVisibles > 0, "Revisado", "Sin revisión registrada" )
+
+// Fecha de evaluación simulada del escenario, NO fecha real de actualización.
+// Mostrar en el informe: "Evaluación simulada: 27/10/2026".
+Estado del período =
+VAR Periodo = SELECTEDVALUE ( Fecha[periodo] )
+VAR Evaluacion = DATE ( 2026, 10, 27 )
+VAR FinMes = EOMONTH ( MAX ( Fecha[fecha] ), 0 )
+RETURN
+IF (
+    ISBLANK ( Periodo ),
+    "Seleccione un mes",
+    IF ( Evaluacion < FinMes + 5, "Provisional", "Cerrado" )
+)
+
+// --- Semáforos (color condicional por valor de campo) -----------------------
+Color K3 =
+SWITCH (
+    TRUE (),
+    ISBLANK ( [K3 tasa devolución] ), "#6B7280",
+    [K3 tasa devolución] <= 0.03, "#15803D",
+    [K3 tasa devolución] <= 0.05, "#B45309",
+    "#B91C1C"
+)
+
+Color K5 =
+SWITCH (
+    TRUE (),
+    ISBLANK ( [K5 cumplimiento] ), "#6B7280",
+    [K5 cumplimiento] >= 0.98, "#15803D",
+    [K5 cumplimiento] >= 0.95, "#B45309",
+    "#B91C1C"
+)

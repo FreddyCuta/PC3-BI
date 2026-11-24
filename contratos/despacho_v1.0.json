@@ -1,0 +1,47 @@
+{
+  "fuente": "despacho",
+  "version_contrato": "1.0",
+  "formato": {
+    "tipo": "CSV",
+    "codificacion": "UTF-8",
+    "delimitador": ",",
+    "encabezado": true,
+    "nota_salto_linea": "Los archivos entregados usan LF; los manifiestos registran CRLF. Ver politica en POLITICAS_CASO.md."
+  },
+  "ruta_raw": "raw/tobotex/<lote>/despacho_<lote>.csv",
+  "clave_negocio": ["id_movimiento", "version"],
+  "regla_version": "version mayor conserva la historia; la misma clave y version con otro contenido se rechaza (C3)",
+  "granularidad": "una fila por movimiento/version",
+  "campos": [
+    {"campo": "id_movimiento", "tipo": "string", "requerido": true},
+    {"campo": "version", "tipo": "int", "requerido": true},
+    {"campo": "fecha_salida", "tipo": "date", "formato": "YYYY-MM-DD", "requerido": true},
+    {"campo": "tienda", "tipo": "string", "requerido": true},
+    {"campo": "marca", "tipo": "string", "requerido": true},
+    {"campo": "producto", "tipo": "string", "requerido": true},
+    {"campo": "contrato", "tipo": "string", "requerido": true},
+    {"campo": "detalle", "tipo": "string", "requerido": true},
+    {"campo": "cantidad_contratada", "tipo": "int", "requerido": true},
+    {"campo": "cantidad_despachada", "tipo": "int", "requerido": true},
+    {"campo": "importe_pen", "tipo": "decimal(18,2)", "formato": "punto decimal", "requerido": true},
+    {"campo": "fecha_actualizacion_origen", "tipo": "datetime", "requerido": false}
+  ],
+  "cambios_admitidos": [
+    "Campos opcionales adicionales siempre que el mapeo a staging los ignore sin perder los requeridos."
+  ],
+  "cambios_no_admitidos": [
+    "Eliminacion o renombre de campos requeridos (C1).",
+    "Cambio de tipo incompatible en campos requeridos (C4)."
+  ],
+  "controles": {
+    "C1": "El encabezado real debe contener todos los campos requeridos; ausencia bloquea el lote.",
+    "C2": "Clave + version + hash repetidos: omitir.",
+    "C3": "Clave + version con hash distinto: rechazar.",
+    "C4": "Campo requerido ausente, nulo o no convertible: rechazar fila.",
+    "C5": "Cantidades e importes positivos y producto del catalogo.",
+    "C6": "Tienda vigente segun [vigente_desde, vigente_hasta) en fecha_salida.",
+    "C7": "Correccion dentro de la ventana documentada de 90 dias.",
+    "C8": "Umbral por fuente; ver POLITICAS_CASO.md."
+  },
+  "coherencia": "Debe coincidir con ctl.contrato_campo de SQL query 6.sql y con ctl.sp_validar_contrato."
+}

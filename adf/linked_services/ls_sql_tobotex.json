@@ -1,0 +1,14 @@
+{
+  "name": "ls_sql_tobotex",
+  "properties": {
+    "description": "Plantilla local. Sustituir servidor y base reales. La identidad ADF debe existir como usuario en la base y tener permisos de ingesta. Alternativa: SQL + Key Vault, sin valor de secreto en el repo.",
+    "type": "AzureSqlDatabase",
+    "typeProperties": {
+      "server": "sql-tobotex-pc3-TUINICIALES.database.windows.net",
+      "database": "sqldb-tobotex",
+      "encrypt": "mandatory",
+      "trustServerCertificate": false,
+      "authenticationType": "SystemAssignedManagedIdentity"
+    }
+  }
+}

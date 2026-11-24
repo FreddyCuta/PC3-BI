@@ -37,6 +37,8 @@ evidencias/**/*.jpeg
 evidencias/**/*.csv
 evidencias/**/*.xlsx
 evidencias/**/*.json
+!evidencias/relevo/verificacion_archivos.json
+!evidencias/relevo/validacion_jsonl.json
 !pruebas/bitacora_pruebas.csv
 
 # Keep placeholders

@@ -1,0 +1,9 @@
+{
+  "name": "ds_sql_query_control",
+  "properties": {
+    "description": "Dataset de soporte para Lookup/Stored Procedure en la base de control.",
+    "type": "AzureSqlTable",
+    "linkedServiceName": { "referenceName": "ls_sql_control", "type": "LinkedServiceReference" },
+    "typeProperties": { "schema": "stg", "table": "despacho" }
+  }
+}

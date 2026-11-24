@@ -1,0 +1,9 @@
+{
+  "name": "ds_sql_query",
+  "properties": {
+    "description": "Dataset de soporte para actividades Lookup/Stored Procedure; apunta a una tabla existente sólo para obtener la conexión SQL.",
+    "type": "AzureSqlTable",
+    "linkedServiceName": { "referenceName": "ls_sql_tobotex", "type": "LinkedServiceReference" },
+    "typeProperties": { "schema": "stg", "table": "despacho" }
+  }
+}

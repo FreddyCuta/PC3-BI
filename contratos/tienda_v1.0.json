@@ -1,0 +1,39 @@
+{
+  "fuente": "tienda",
+  "version_contrato": "1.0",
+  "formato": {
+    "tipo": "CSV",
+    "codificacion": "UTF-8",
+    "delimitador": ",",
+    "encabezado": true
+  },
+  "ruta_raw": "raw/tobotex/L0/tienda_L0.csv",
+  "clave_negocio": ["tienda", "vigente_desde"],
+  "regla_version": "historia SCD2 por intervalo [vigente_desde, vigente_hasta); L0 entrega los intervalos historicos",
+  "granularidad": "una fila por tienda/version temporal",
+  "campos": [
+    {"campo": "tienda", "tipo": "string", "requerido": true},
+    {"campo": "zona_comercial", "tipo": "string", "requerido": true},
+    {"campo": "vigente_desde", "tipo": "date", "formato": "YYYY-MM-DD", "requerido": true},
+    {"campo": "vigente_hasta", "tipo": "date", "formato": "YYYY-MM-DD", "requerido": false, "politica": "vacio -> 9999-12-31"}
+  ],
+  "cambios_admitidos": [
+    "Campos opcionales adicionales.",
+    "Nuevos intervalos siempre que no se solapen con los vigentes."
+  ],
+  "cambios_no_admitidos": [
+    "Ausencia o renombre de campos requeridos (C1).",
+    "Solapamiento de intervalos para la misma tienda sin cierre explicito del anterior."
+  ],
+  "limitaciones_conocidas": [
+    "trusted.sp_merge_tienda no implementa cualquier cambio SCD2 sobre un catalogo previo.",
+    "ctl.sp_abrir_corte solo cuenta cambios de despacho/reclamo: un lote solo de tienda no genera corte con el codigo actual.",
+    "El descarte de candidatos no revierte cambios generales en tiendas."
+  ],
+  "controles": {
+    "C1": "Encabezado con campos requeridos.",
+    "C4": "Fechas no convertibles.",
+    "C6": "Intervalos validos y sin solapamiento para la fecha de negocio de los hechos."
+  },
+  "coherencia": "Debe coincidir con ctl.contrato_campo de SQL query 6.sql."
+}

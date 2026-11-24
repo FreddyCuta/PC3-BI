@@ -1,0 +1,26 @@
+{
+  "name": "ds_jsonl",
+  "properties": {
+    "description": "JSONL: un objeto por línea (setOfObjects). La prevalidación local no sustituye la inspección en ADF (manual §6.4).",
+    "type": "Json",
+    "linkedServiceName": {
+      "referenceName": "ls_adls",
+      "type": "LinkedServiceReference"
+    },
+    "parameters": {
+      "contenedor": { "type": "String", "defaultValue": "raw" },
+      "carpeta": { "type": "String", "defaultValue": "tobotex/L0" },
+      "archivo": { "type": "String", "defaultValue": "reclamo_L0.jsonl" }
+    },
+    "typeProperties": {
+      "location": {
+        "type": "AzureBlobFSLocation",
+        "fileSystem": { "value": "@dataset().contenedor", "type": "Expression" },
+        "folderPath": { "value": "@dataset().carpeta", "type": "Expression" },
+        "fileName": { "value": "@dataset().archivo", "type": "Expression" }
+      },
+      "encodingName": "UTF-8",
+      "filePattern": "setOfObjects"
+    }
+  }
+}

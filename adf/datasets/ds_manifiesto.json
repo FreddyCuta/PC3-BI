@@ -1,0 +1,25 @@
+{
+  "name": "ds_manifiesto",
+  "properties": {
+    "description": "Manifiesto JSON por lote. Parámetros: contenedor, carpeta, archivo. No repetir el contenedor dentro de carpeta.",
+    "type": "Json",
+    "linkedServiceName": {
+      "referenceName": "ls_adls",
+      "type": "LinkedServiceReference"
+    },
+    "parameters": {
+      "contenedor": { "type": "String", "defaultValue": "raw" },
+      "carpeta": { "type": "String", "defaultValue": "tobotex/L0" },
+      "archivo": { "type": "String", "defaultValue": "manifiesto.json" }
+    },
+    "typeProperties": {
+      "location": {
+        "type": "AzureBlobFSLocation",
+        "fileSystem": { "value": "@dataset().contenedor", "type": "Expression" },
+        "folderPath": { "value": "@dataset().carpeta", "type": "Expression" },
+        "fileName": { "value": "@dataset().archivo", "type": "Expression" }
+      },
+      "encodingName": "UTF-8"
+    }
+  }
+}

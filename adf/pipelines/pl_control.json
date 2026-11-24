@@ -1,0 +1,527 @@
+{
+  "name": "pl_control",
+  "properties": {
+    "description": "Plantilla local del pipeline hijo Control (Anexo E adaptado) (manual §§6.3–6.7). No publicada ni ejecutada. Verificar en Debug la forma en que ADF expone structure y las propiedades del manifiesto.",
+    "concurrency": 1,
+    "parameters": {
+      "lote_id": { "type": "String", "defaultValue": "L0" },
+      "fecha_recepcion": { "type": "String", "defaultValue": "2026-04-01" },
+      "simular_falla": { "type": "String", "defaultValue": "no" }
+    },
+    "activities": [
+      {
+        "name": "lk_manifiesto",
+        "type": "Lookup",
+        "typeProperties": {
+          "source": { "type": "JsonSource" },
+          "dataset": {
+            "referenceName": "ds_manifiesto",
+            "type": "DatasetReference",
+            "parameters": {
+              "contenedor": "rawcontrol",
+              "carpeta": "@concat('control_adaptado/', pipeline().parameters.lote_id)",
+              "archivo": "manifiesto.json"
+            }
+          },
+          "firstRowOnly": true
+        }
+      },
+      {
+        "name": "md_tienda",
+        "type": "GetMetadata",
+        "dependsOn": [{ "activity": "lk_manifiesto", "dependsOnConditions": ["Succeeded"] }],
+        "typeProperties": {
+          "fieldList": ["exists", "structure", "columnCount"],
+          "dataset": {
+            "referenceName": "ds_csv",
+            "type": "DatasetReference",
+            "parameters": {
+              "contenedor": "rawcontrol",
+              "carpeta": "@concat('control_adaptado/', pipeline().parameters.lote_id)",
+              "archivo": "@concat('tienda_', pipeline().parameters.lote_id, '.csv')"
+            }
+          }
+        }
+      },
+      {
+        "name": "md_despacho",
+        "type": "GetMetadata",
+        "dependsOn": [{ "activity": "lk_manifiesto", "dependsOnConditions": ["Succeeded"] }],
+        "typeProperties": {
+          "fieldList": ["exists", "structure", "columnCount"],
+          "dataset": {
+            "referenceName": "ds_csv",
+            "type": "DatasetReference",
+            "parameters": {
+              "contenedor": "rawcontrol",
+              "carpeta": "@concat('control_adaptado/', pipeline().parameters.lote_id)",
+              "archivo": "@concat('despacho_', pipeline().parameters.lote_id, '.csv')"
+            }
+          }
+        }
+      },
+      {
+        "name": "md_reclamo",
+        "type": "GetMetadata",
+        "dependsOn": [{ "activity": "lk_manifiesto", "dependsOnConditions": ["Succeeded"] }],
+        "typeProperties": {
+          "fieldList": ["exists"],
+          "dataset": {
+            "referenceName": "ds_jsonl",
+            "type": "DatasetReference",
+            "parameters": {
+              "contenedor": "rawcontrol",
+              "carpeta": "@concat('control_adaptado/', pipeline().parameters.lote_id)",
+              "archivo": "@concat('reclamo_', pipeline().parameters.lote_id, '.jsonl')"
+            }
+          }
+        }
+      },
+      {
+        "name": "lk_iniciar",
+        "type": "Lookup",
+        "dependsOn": [{ "activity": "lk_manifiesto", "dependsOnConditions": ["Succeeded"] }],
+        "typeProperties": {
+          "source": {
+            "type": "SqlSource",
+            "sqlReaderStoredProcedureName": "ctl.sp_iniciar_lote",
+            "storedProcedureParameters": {
+              "lote_id": { "value": "@pipeline().parameters.lote_id", "type": "String" },
+              "fecha_recepcion": { "value": "@activity('lk_manifiesto').output.firstRow.fecha_recepcion", "type": "String" },
+              "run_id": { "value": "@pipeline().RunId", "type": "String" }
+            }
+          },
+          "dataset": { "referenceName": "ds_sql_query_control", "type": "DatasetReference" },
+          "firstRowOnly": true
+        }
+      },
+      {
+        "name": "if_tienda",
+        "type": "IfCondition",
+        "dependsOn": [
+          { "activity": "md_tienda", "dependsOnConditions": ["Completed"] },
+          { "activity": "lk_iniciar", "dependsOnConditions": ["Succeeded"] }
+        ],
+        "typeProperties": {
+          "expression": { "value": "@bool(activity('md_tienda').output.exists)", "type": "Expression" },
+          "ifTrueActivities": [
+            {
+              "name": "val_tienda",
+              "type": "SqlServerStoredProcedure",
+              "typeProperties": {
+                "storedProcedureName": "ctl.sp_validar_contrato",
+                "storedProcedureParameters": {
+                  "lote_id": { "value": "@pipeline().parameters.lote_id", "type": "String" },
+                  "intento": { "value": "@activity('lk_iniciar').output.firstRow.intento", "type": "Int" },
+                  "fuente": { "value": "tienda", "type": "String" },
+                  "columnas": { "value": "@string(activity('md_tienda').output.structure)", "type": "String" }
+                }
+              },
+              "linkedServiceName": { "referenceName": "ls_sql_control", "type": "LinkedServiceReference" }
+            },
+            {
+              "name": "cp_tienda",
+              "type": "Copy",
+              "dependsOn": [{ "activity": "val_tienda", "dependsOnConditions": ["Succeeded"] }],
+              "inputs": [{
+                "referenceName": "ds_csv",
+                "type": "DatasetReference",
+                "parameters": {
+                  "contenedor": "rawcontrol",
+                  "carpeta": "@concat('control_adaptado/', pipeline().parameters.lote_id)",
+                  "archivo": "@concat('tienda_', pipeline().parameters.lote_id, '.csv')"
+                }
+              }],
+              "outputs": [{ "referenceName": "ds_stg_tienda_control", "type": "DatasetReference" }],
+              "typeProperties": {
+                "source": {
+                  "type": "DelimitedTextSource",
+                  "additionalColumns": [
+                    { "name": "lote_id", "value": { "value": "@pipeline().parameters.lote_id", "type": "Expression" } },
+                    { "name": "archivo", "value": { "value": "@concat('tienda_', pipeline().parameters.lote_id, '.csv')", "type": "Expression" } }
+                  ]
+                },
+                "sink": { "type": "AzureSqlSink", "tableOption": "none" },
+                "translator": {
+                  "type": "TabularTranslator",
+                  "mappings": [
+                    { "source": { "name": "tienda" }, "sink": { "name": "tienda" } },
+                    { "source": { "name": "zona_comercial" }, "sink": { "name": "zona_comercial" } },
+                    { "source": { "name": "vigente_desde" }, "sink": { "name": "vigente_desde" } },
+                    { "source": { "name": "vigente_hasta" }, "sink": { "name": "vigente_hasta" } },
+                    { "source": { "name": "lote_id" }, "sink": { "name": "lote_id" } },
+                    { "source": { "name": "archivo" }, "sink": { "name": "archivo" } }
+                  ]
+                }
+              }
+            }
+          ],
+          "ifFalseActivities": []
+        }
+      },
+      {
+        "name": "if_despacho",
+        "type": "IfCondition",
+        "dependsOn": [
+          { "activity": "md_despacho", "dependsOnConditions": ["Completed"] },
+          { "activity": "lk_iniciar", "dependsOnConditions": ["Succeeded"] }
+        ],
+        "typeProperties": {
+          "expression": { "value": "@bool(activity('md_despacho').output.exists)", "type": "Expression" },
+          "ifTrueActivities": [
+            {
+              "name": "val_despacho",
+              "type": "SqlServerStoredProcedure",
+              "typeProperties": {
+                "storedProcedureName": "ctl.sp_validar_contrato",
+                "storedProcedureParameters": {
+                  "lote_id": { "value": "@pipeline().parameters.lote_id", "type": "String" },
+                  "intento": { "value": "@activity('lk_iniciar').output.firstRow.intento", "type": "Int" },
+                  "fuente": { "value": "despacho", "type": "String" },
+                  "columnas": { "value": "@string(activity('md_despacho').output.structure)", "type": "String" }
+                }
+              },
+              "linkedServiceName": { "referenceName": "ls_sql_control", "type": "LinkedServiceReference" }
+            },
+            {
+              "name": "cp_despacho",
+              "type": "Copy",
+              "dependsOn": [{ "activity": "val_despacho", "dependsOnConditions": ["Succeeded"] }],
+              "inputs": [{
+                "referenceName": "ds_csv",
+                "type": "DatasetReference",
+                "parameters": {
+                  "contenedor": "rawcontrol",
+                  "carpeta": "@concat('control_adaptado/', pipeline().parameters.lote_id)",
+                  "archivo": "@concat('despacho_', pipeline().parameters.lote_id, '.csv')"
+                }
+              }],
+              "outputs": [{ "referenceName": "ds_stg_despacho_control", "type": "DatasetReference" }],
+              "typeProperties": {
+                "source": {
+                  "type": "DelimitedTextSource",
+                  "additionalColumns": [
+                    { "name": "lote_id", "value": { "value": "@pipeline().parameters.lote_id", "type": "Expression" } },
+                    { "name": "archivo", "value": { "value": "@concat('despacho_', pipeline().parameters.lote_id, '.csv')", "type": "Expression" } }
+                  ]
+                },
+                "sink": { "type": "AzureSqlSink", "tableOption": "none" },
+                "translator": {
+                  "type": "TabularTranslator",
+                  "mappings": [
+                    { "source": { "name": "id_movimiento" }, "sink": { "name": "id_movimiento" } },
+                    { "source": { "name": "version" }, "sink": { "name": "version" } },
+                    { "source": { "name": "fecha_salida" }, "sink": { "name": "fecha_salida" } },
+                    { "source": { "name": "tienda" }, "sink": { "name": "tienda" } },
+                    { "source": { "name": "marca" }, "sink": { "name": "marca" } },
+                    { "source": { "name": "producto" }, "sink": { "name": "producto" } },
+                    { "source": { "name": "contrato" }, "sink": { "name": "contrato" } },
+                    { "source": { "name": "detalle" }, "sink": { "name": "detalle" } },
+                    { "source": { "name": "cantidad_contratada" }, "sink": { "name": "cantidad_contratada" } },
+                    { "source": { "name": "cantidad_despachada" }, "sink": { "name": "cantidad_despachada" } },
+                    { "source": { "name": "importe_pen" }, "sink": { "name": "importe_pen" } },
+                    { "source": { "name": "fecha_actualizacion_origen" }, "sink": { "name": "fecha_actualizacion_origen" } },
+                    { "source": { "name": "lote_id" }, "sink": { "name": "lote_id" } },
+                    { "source": { "name": "archivo" }, "sink": { "name": "archivo" } }
+                  ]
+                }
+              }
+            }
+          ],
+          "ifFalseActivities": []
+        }
+      },
+      {
+        "name": "if_reclamo",
+        "type": "IfCondition",
+        "dependsOn": [
+          { "activity": "md_reclamo", "dependsOnConditions": ["Completed"] },
+          { "activity": "lk_iniciar", "dependsOnConditions": ["Succeeded"] }
+        ],
+        "typeProperties": {
+          "expression": { "value": "@bool(activity('md_reclamo').output.exists)", "type": "Expression" },
+          "ifTrueActivities": [
+            {
+              "name": "val_reclamo",
+              "type": "SqlServerStoredProcedure",
+              "typeProperties": {
+                "storedProcedureName": "ctl.sp_validar_contrato",
+                "storedProcedureParameters": {
+                  "lote_id": { "value": "@pipeline().parameters.lote_id", "type": "String" },
+                  "intento": { "value": "@activity('lk_iniciar').output.firstRow.intento", "type": "Int" },
+                  "fuente": { "value": "reclamo", "type": "String" },
+                  "columnas": { "value": null, "type": "String" }
+                }
+              },
+              "linkedServiceName": { "referenceName": "ls_sql_control", "type": "LinkedServiceReference" }
+            },
+            {
+              "name": "cp_reclamo",
+              "type": "Copy",
+              "dependsOn": [{ "activity": "val_reclamo", "dependsOnConditions": ["Succeeded"] }],
+              "inputs": [{
+                "referenceName": "ds_jsonl",
+                "type": "DatasetReference",
+                "parameters": {
+                  "contenedor": "rawcontrol",
+                  "carpeta": "@concat('control_adaptado/', pipeline().parameters.lote_id)",
+                  "archivo": "@concat('reclamo_', pipeline().parameters.lote_id, '.jsonl')"
+                }
+              }],
+              "outputs": [{ "referenceName": "ds_stg_reclamo_control", "type": "DatasetReference" }],
+              "typeProperties": {
+                "source": {
+                  "type": "JsonSource",
+                  "additionalColumns": [
+                    { "name": "lote_id", "value": { "value": "@pipeline().parameters.lote_id", "type": "Expression" } },
+                    { "name": "archivo", "value": { "value": "@concat('reclamo_', pipeline().parameters.lote_id, '.jsonl')", "type": "Expression" } }
+                  ]
+                },
+                "sink": { "type": "AzureSqlSink", "tableOption": "none" },
+                "translator": {
+                  "type": "TabularTranslator",
+                  "mappings": [
+                    { "source": { "name": "id_reclamo" }, "sink": { "name": "id_reclamo" } },
+                    { "source": { "name": "id_movimiento" }, "sink": { "name": "id_movimiento" } },
+                    { "source": { "name": "fecha_reclamo" }, "sink": { "name": "fecha_reclamo" } },
+                    { "source": { "name": "cantidad_devuelta" }, "sink": { "name": "cantidad_devuelta" } },
+                    { "source": { "name": "importe_devuelto_pen" }, "sink": { "name": "importe_devuelto_pen" } },
+                    { "source": { "name": "motivo" }, "sink": { "name": "motivo" } },
+                    { "source": { "name": "fecha_actualizacion_origen" }, "sink": { "name": "fecha_actualizacion_origen" } },
+                    { "source": { "name": "lote_id" }, "sink": { "name": "lote_id" } },
+                    { "source": { "name": "archivo" }, "sink": { "name": "archivo" } }
+                  ]
+                }
+              }
+            }
+          ],
+          "ifFalseActivities": []
+        }
+      },
+      {
+        "name": "sp_tienda",
+        "type": "SqlServerStoredProcedure",
+        "dependsOn": [{ "activity": "if_tienda", "dependsOnConditions": ["Completed"] }],
+        "typeProperties": {
+          "storedProcedureName": "trusted.sp_merge_tienda",
+          "storedProcedureParameters": {
+            "lote_id": { "value": "@pipeline().parameters.lote_id", "type": "String" },
+            "intento": { "value": "@activity('lk_iniciar').output.firstRow.intento", "type": "Int" }
+          }
+        },
+        "linkedServiceName": { "referenceName": "ls_sql_control", "type": "LinkedServiceReference" }
+      },
+      {
+        "name": "sp_despacho",
+        "type": "SqlServerStoredProcedure",
+        "dependsOn": [{ "activity": "if_despacho", "dependsOnConditions": ["Completed"] }],
+        "typeProperties": {
+          "storedProcedureName": "trusted.sp_merge_despacho",
+          "storedProcedureParameters": {
+            "lote_id": { "value": "@pipeline().parameters.lote_id", "type": "String" },
+            "intento": { "value": "@activity('lk_iniciar').output.firstRow.intento", "type": "Int" },
+            "umbral_rechazo": { "value": "0.2500", "type": "Decimal" }
+          }
+        },
+        "linkedServiceName": { "referenceName": "ls_sql_control", "type": "LinkedServiceReference" }
+      },
+      {
+        "name": "sp_reclamo",
+        "type": "SqlServerStoredProcedure",
+        "dependsOn": [{ "activity": "if_reclamo", "dependsOnConditions": ["Completed"] }],
+        "typeProperties": {
+          "storedProcedureName": "trusted.sp_merge_reclamo",
+          "storedProcedureParameters": {
+            "lote_id": { "value": "@pipeline().parameters.lote_id", "type": "String" },
+            "intento": { "value": "@activity('lk_iniciar').output.firstRow.intento", "type": "Int" },
+            "umbral_rechazo": { "value": "0.2500", "type": "Decimal" }
+          }
+        },
+        "linkedServiceName": { "referenceName": "ls_sql_control", "type": "LinkedServiceReference" }
+      },
+      {
+        "name": "lk_abrir",
+        "type": "Lookup",
+        "dependsOn": [
+          { "activity": "sp_despacho", "dependsOnConditions": ["Succeeded"] },
+          { "activity": "sp_reclamo", "dependsOnConditions": ["Succeeded"] }
+        ],
+        "typeProperties": {
+          "source": {
+            "type": "SqlSource",
+            "sqlReaderStoredProcedureName": "ctl.sp_abrir_corte",
+            "storedProcedureParameters": {
+              "lote_id": { "value": "@pipeline().parameters.lote_id", "type": "String" },
+              "intento": { "value": "@activity('lk_iniciar').output.firstRow.intento", "type": "Int" }
+            }
+          },
+          "dataset": { "referenceName": "ds_sql_query_control", "type": "DatasetReference" },
+          "firstRowOnly": true
+        }
+      },
+      {
+        "name": "if_corte",
+        "type": "IfCondition",
+        "dependsOn": [{ "activity": "lk_abrir", "dependsOnConditions": ["Succeeded"] }],
+        "typeProperties": {
+          "expression": { "value": "@greater(int(activity('lk_abrir').output.firstRow.corte_seq), 0)", "type": "Expression" },
+          "ifTrueActivities": [
+            {
+              "name": "prep_despacho",
+              "type": "SqlServerStoredProcedure",
+              "typeProperties": {
+                "storedProcedureName": "cur.sp_preparar_hecho_despacho",
+                "storedProcedureParameters": {
+                  "corte_seq": { "value": "@activity('lk_abrir').output.firstRow.corte_seq", "type": "Int" }
+                }
+              },
+              "linkedServiceName": { "referenceName": "ls_sql_control", "type": "LinkedServiceReference" }
+            },
+            {
+              "name": "if_falla",
+              "type": "IfCondition",
+              "dependsOn": [{ "activity": "prep_despacho", "dependsOnConditions": ["Succeeded"] }],
+              "typeProperties": {
+                "expression": { "value": "@equals(pipeline().parameters.simular_falla, 'tras_despacho')", "type": "Expression" },
+                "ifTrueActivities": [
+                  {
+                    "name": "sp_simular_falla",
+                    "type": "SqlServerStoredProcedure",
+                    "typeProperties": { "storedProcedureName": "ctl.sp_simular_falla" },
+                    "linkedServiceName": { "referenceName": "ls_sql_control", "type": "LinkedServiceReference" }
+                  }
+                ],
+                "ifFalseActivities": []
+              }
+            },
+            {
+              "name": "prep_reclamo",
+              "type": "SqlServerStoredProcedure",
+              "dependsOn": [{ "activity": "if_falla", "dependsOnConditions": ["Completed"] }],
+              "typeProperties": {
+                "storedProcedureName": "cur.sp_preparar_hecho_reclamo",
+                "storedProcedureParameters": {
+                  "corte_seq": { "value": "@activity('lk_abrir').output.firstRow.corte_seq", "type": "Int" }
+                }
+              },
+              "linkedServiceName": { "referenceName": "ls_sql_control", "type": "LinkedServiceReference" }
+            },
+            {
+              "name": "publicar",
+              "type": "SqlServerStoredProcedure",
+              "dependsOn": [{ "activity": "prep_reclamo", "dependsOnConditions": ["Succeeded"] }],
+              "typeProperties": {
+                "storedProcedureName": "ctl.sp_publicar_corte",
+                "storedProcedureParameters": {
+                  "corte_seq": { "value": "@activity('lk_abrir').output.firstRow.corte_seq", "type": "Int" }
+                }
+              },
+              "linkedServiceName": { "referenceName": "ls_sql_control", "type": "LinkedServiceReference" }
+            }
+          ],
+          "ifFalseActivities": []
+        }
+      },
+      {
+        "name": "registrar_falla_inicio",
+        "type": "ExecutePipeline",
+        "dependsOn": [{ "activity": "lk_iniciar", "dependsOnConditions": ["Failed"] }],
+        "typeProperties": {
+          "pipeline": { "referenceName": "pl_registrar_falla_control", "type": "PipelineReference" },
+          "waitOnCompletion": true,
+          "parameters": {
+            "lote_id": { "value": "@pipeline().parameters.lote_id", "type": "Expression" },
+            "intento": { "value": "0", "type": "Expression" },
+            "mensaje": { "value": "@activity('lk_iniciar').error.message", "type": "Expression" }
+          }
+        }
+      },
+      {
+        "name": "fail_inicio",
+        "type": "Fail",
+        "dependsOn": [{ "activity": "registrar_falla_inicio", "dependsOnConditions": ["Succeeded"] }],
+        "typeProperties": { "message": "Fallo antes de obtener intento; conservar RunId en Monitor" }
+      },
+      {
+        "name": "registrar_falla_if_tienda",
+        "type": "ExecutePipeline",
+        "dependsOn": [{ "activity": "if_tienda", "dependsOnConditions": ["Failed"] }],
+        "typeProperties": {
+          "pipeline": { "referenceName": "pl_registrar_falla_control", "type": "PipelineReference" },
+          "waitOnCompletion": true,
+          "parameters": {
+            "lote_id": { "value": "@pipeline().parameters.lote_id", "type": "Expression" },
+            "intento": { "value": "@activity('lk_iniciar').output.firstRow.intento", "type": "Expression" },
+            "mensaje": { "value": "@activity('if_tienda').error.message", "type": "Expression" }
+          }
+        }
+      },
+      {
+        "name": "fail_tienda",
+        "type": "Fail",
+        "dependsOn": [{ "activity": "registrar_falla_if_tienda", "dependsOnConditions": ["Succeeded"] }],
+        "typeProperties": { "message": "Fallo en validación/copia de tienda" }
+      },
+      {
+        "name": "registrar_falla_if_despacho",
+        "type": "ExecutePipeline",
+        "dependsOn": [{ "activity": "if_despacho", "dependsOnConditions": ["Failed"] }],
+        "typeProperties": {
+          "pipeline": { "referenceName": "pl_registrar_falla_control", "type": "PipelineReference" },
+          "waitOnCompletion": true,
+          "parameters": {
+            "lote_id": { "value": "@pipeline().parameters.lote_id", "type": "Expression" },
+            "intento": { "value": "@activity('lk_iniciar').output.firstRow.intento", "type": "Expression" },
+            "mensaje": { "value": "@activity('if_despacho').error.message", "type": "Expression" }
+          }
+        }
+      },
+      {
+        "name": "fail_despacho",
+        "type": "Fail",
+        "dependsOn": [{ "activity": "registrar_falla_if_despacho", "dependsOnConditions": ["Succeeded"] }],
+        "typeProperties": { "message": "Fallo en validación/copia de despacho" }
+      },
+      {
+        "name": "registrar_falla_if_reclamo",
+        "type": "ExecutePipeline",
+        "dependsOn": [{ "activity": "if_reclamo", "dependsOnConditions": ["Failed"] }],
+        "typeProperties": {
+          "pipeline": { "referenceName": "pl_registrar_falla_control", "type": "PipelineReference" },
+          "waitOnCompletion": true,
+          "parameters": {
+            "lote_id": { "value": "@pipeline().parameters.lote_id", "type": "Expression" },
+            "intento": { "value": "@activity('lk_iniciar').output.firstRow.intento", "type": "Expression" },
+            "mensaje": { "value": "@activity('if_reclamo').error.message", "type": "Expression" }
+          }
+        }
+      },
+      {
+        "name": "fail_reclamo",
+        "type": "Fail",
+        "dependsOn": [{ "activity": "registrar_falla_if_reclamo", "dependsOnConditions": ["Succeeded"] }],
+        "typeProperties": { "message": "Fallo en validación/copia de reclamo" }
+      },
+      {
+        "name": "registrar_falla_corte",
+        "type": "ExecutePipeline",
+        "dependsOn": [{ "activity": "if_corte", "dependsOnConditions": ["Failed"] }],
+        "typeProperties": {
+          "pipeline": { "referenceName": "pl_registrar_falla_control", "type": "PipelineReference" },
+          "waitOnCompletion": true,
+          "parameters": {
+            "lote_id": { "value": "@pipeline().parameters.lote_id", "type": "Expression" },
+            "intento": { "value": "@activity('lk_iniciar').output.firstRow.intento", "type": "Expression" },
+            "mensaje": { "value": "@activity('if_corte').error.message", "type": "Expression" }
+          }
+        }
+      },
+      {
+        "name": "fail_corte",
+        "type": "Fail",
+        "dependsOn": [{ "activity": "registrar_falla_corte", "dependsOnConditions": ["Succeeded"] }],
+        "typeProperties": { "message": "Fallo al preparar o publicar el corte; conservar RunId y candidato" }
+      }
+    ]
+  }
+}

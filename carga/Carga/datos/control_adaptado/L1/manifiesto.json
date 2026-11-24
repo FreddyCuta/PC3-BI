@@ -1,0 +1,15 @@
+{
+  "lote": "L1",
+  "fecha_recepcion": "2026-04-04",
+  "origen": "control_anexoE",
+  "adaptacion": "1.0",
+  "fechas_recepcion": "supuestos de prueba, no datos originales",
+  "archivos": [
+    {
+      "archivo": "despacho_L1.csv",
+      "filas": 4,
+      "bytes": 426,
+      "sha256": "57d2fe09034daff7bb6ffb0371d96c7d3613845ce678e1fa3e09f880fa66c16f"
+    }
+  ]
+}
